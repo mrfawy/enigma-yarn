@@ -1,4 +1,4 @@
-package com.hortonworks.simpleyarnapp;
+package com.tito.enigma;
 
 import java.util.Collections;
 import java.util.List;
