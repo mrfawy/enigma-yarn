@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.home</groupId>
+  <artifactId>enigma-yarn-app</artifactId>
+  <version>1.1.0</version>
+  <name>enigma-yarn-app</name>
+
+  
+ 
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-client</artifactId>
+      <version>2.4.1-mapr-1408</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>2.4.1-mapr-1408</version>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+ <repository>
+     <id>mapr-releases</id>
+     <url>http://repository.mapr.com/maven/</url>
+     <snapshots><enabled>false</enabled></snapshots>
+     <releases><enabled>true</enabled></releases>
+   </repository>
+</repositories>
+</project>
