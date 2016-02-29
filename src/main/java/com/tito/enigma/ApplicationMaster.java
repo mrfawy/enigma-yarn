@@ -627,7 +627,7 @@ public class ApplicationMaster {
   }
 
   @VisibleForTesting
-  protected boolean finish() {
+  protected boolean finish() {	 
     // wait for completion.
     while (!done
         && (numCompletedContainers.get() != numTotalContainers)) {
@@ -791,6 +791,7 @@ public class ApplicationMaster {
       float progress = (float) numCompletedContainers.get()
           / numTotalContainers;
       return progress;
+   
     }
 
     @Override

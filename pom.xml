@@ -6,20 +6,39 @@
 	<version>1.1.0</version>
 	<name>enigma-yarn-app</name>
 
+	<properties>
 
+		<hadoop.version>2.5.1-mapr-1501</hadoop.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-yarn-client</artifactId>
-			<version>2.4.1-mapr-1408</version>
+			<artifactId>hadoop-common</artifactId>
+			<version>${hadoop.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-common</artifactId>
-			<version>2.4.1-mapr-1408</version>
+			<artifactId>hadoop-yarn-api</artifactId>
+			<version>${hadoop.version}</version>
+			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-yarn-client</artifactId>
+			<version>${hadoop.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-yarn-server-nodemanager</artifactId>
+			<version>${hadoop.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
+
 
 	<repositories>
 		<repository>
@@ -34,27 +53,27 @@
 		</repository>
 	</repositories>
 	<build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-            <!-- strictly speaking, the unit test is really a regression test. It
-                 needs the main jar to be available to be able to run. -->
-            <phase>test-compile</phase>
-          </execution>
-        </executions>
-        <configuration>
-           <archive>
-             <manifest>
-               <mainClass>com.tito.enigma.Client</mainClass>
-             </manifest>
-           </archive>
-        </configuration>
-      </plugin>      
-    </plugins>
-  </build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<!-- strictly speaking, the unit test is really a regression test. 
+							It needs the main jar to be available to be able to run. -->
+						<phase>test-compile</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>com.tito.enigma.Client</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

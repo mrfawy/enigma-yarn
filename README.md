@@ -12,8 +12,9 @@ scp /cygdrive/c/Users/mabdelra/.m2/repository/com/home/enigma-yarn-app/1.1.0/eni
 
 
 
-### Managed mode
+### run
 
-yarn jar /axp/gcp/cpsetlh/dev/enigma-yarn-app-1.1.0.jar com.tito.enigma.Client /bin/date 2 /axp/gcp/cpsetlh/dev/enigma-yarn-app-1.1.0.jar
+ yarn jar /axp/gcp/cpsetlh/dev/enigma-yarn-app-1.1.0.jar com.tito.enigma.Client -jar ./enigma-yarn-app-1.1.0.jar -shell_command ls -shell_args "/axp/" -queue "cpsetlh"
+
   
     
