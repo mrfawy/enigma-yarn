@@ -1,7 +1,8 @@
-package com.tito.enigma.worker;
+package com.tito.enigma.machine;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -10,14 +11,22 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 
-import com.tito.enigma.Client;
+import com.tito.enigma.yarn.client.Client;
 
 public class EnigmaMachine {
 	private static final Log LOG = LogFactory.getLog(Client.class);
 
 	private BigDecimal length;
+	private String input;
+	private String output;
 
 	// Command line options
 	private Options opts;
@@ -25,6 +34,8 @@ public class EnigmaMachine {
 	public EnigmaMachine() {
 		opts = new Options();
 		opts.addOption("length", true, "The length of the generate mapad byte stream");
+		opts.addOption("input", true, "file to read");
+		opts.addOption("output", true, "file to write");
 		opts.addOption("help", false, "Print usage");
 	}
 
@@ -51,10 +62,16 @@ public class EnigmaMachine {
 
 		if (cliParser.hasOption("length")) {
 			length = new BigDecimal(cliParser.getOptionValue("length"));
+			if (length.compareTo(new BigDecimal(0)) < 0) {
+				throw new IllegalArgumentException("Byte stream length cannot be less than or equal zero");
+			}
 			LOG.info("Generate stream of length:" + length);
 		}
-		if (length.compareTo(new BigDecimal(0)) < 0) {
-			throw new IllegalArgumentException("Byte stream length cannot be less than or equal zero");
+		if (cliParser.hasOption("input")) {
+			input = cliParser.getOptionValue("input");
+		}
+		if (cliParser.hasOption("output")) {
+			output = cliParser.getOptionValue("output");
 		}
 
 		return true;
@@ -66,10 +83,29 @@ public class EnigmaMachine {
 
 	public boolean run() throws IOException, YarnException {
 		LOG.info("Running EnigmaMachine");
+
+		/*Configuration conf = new Configuration();
+		FileSystem fs = FileSystem.get(conf);
+		Path inFile = new Path(URI.create(input));
+		Path outFile = new Path(URI.create(output));
+		if (!fs.exists(inFile))
+			throw new RuntimeException("Input file not found");
+		if (!fs.isFile(inFile))
+			throw new RuntimeException("Input should be a file");
+		if (fs.exists(outFile))
+			throw new RuntimeException("Output already exists");
+		
+		FSDataInputStream in = fs.open(inFile);
+		FSDataOutputStream out = fs.create(outFile);
+		IOUtils.copyBytes(in, out, 2048);		
+		in.close();
+		out.close();
+*/
 		return true;
 	}
 
 	public static void main(String[] args) {
+		System.out.println("Inside Engima Machine main method");
 		boolean result = false;
 		try {
 			EnigmaMachine EnigmaMachine = new EnigmaMachine();

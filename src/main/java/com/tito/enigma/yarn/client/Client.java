@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.tito.enigma;
+package com.tito.enigma.yarn.client;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -75,6 +75,8 @@ import org.apache.hadoop.yarn.client.api.YarnClientApplication;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.util.ConverterUtils;
+
+import com.tito.enigma.yarn.applicationmaster.ApplicationMaster;
 
 /**
  * Client for Distributed Shell application submission to YARN.
@@ -301,15 +303,6 @@ public class Client {
 			throw new IllegalArgumentException("No args specified for client to initialize");
 		}
 
-		if (cliParser.hasOption("log_properties")) {
-			String log4jPath = cliParser.getOptionValue("log_properties");
-			try {
-				Log4jPropertyHelper.updateLog4jConfiguration(Client.class, log4jPath);
-			} catch (Exception e) {
-				LOG.warn("Can not set up custom log4j properties. " + e);
-			}
-		}
-
 		if (cliParser.hasOption("help")) {
 			printUsage();
 			return false;
@@ -528,9 +521,8 @@ public class Client {
 		// local resource for the
 		// eventual containers that will be launched to execute the shell
 		// scripts
-		env.put(DSConstants.DISTRIBUTEDSHELLSCRIPTLOCATION, hdfsShellScriptLocation);
-		env.put(DSConstants.DISTRIBUTEDSHELLSCRIPTTIMESTAMP, Long.toString(hdfsShellScriptTimestamp));
-		env.put(DSConstants.DISTRIBUTEDSHELLSCRIPTLEN, Long.toString(hdfsShellScriptLen));
+		// env.put(DSConstants.DISTRIBUTEDSHELLSCRIPTLOCATION,
+		// hdfsShellScriptLocation);
 
 		// Add AppMaster.jar location to classpath
 		// At some point we should not be required to add
