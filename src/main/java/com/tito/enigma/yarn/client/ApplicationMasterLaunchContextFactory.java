@@ -1,7 +1,6 @@
-package com.tito.enigma.yarn.worker;
+package com.tito.enigma.yarn.client;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,44 +10,37 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 
-import com.tito.enigma.machine.EnigmaMachine;
 import com.tito.enigma.yarn.util.LocalResourcesUtil;
 import com.tito.enigma.yarn.util.YarnConstants;
+import com.tito.enigma.yarn.worker.EnigmaLaunchContextFactory;
 
-public class EnigmaLaunchContextFactory {
+public class ApplicationMasterLaunchContextFactory {
+	private static final Log LOG = LogFactory.getLog(ApplicationMasterLaunchContextFactory.class);
 
-	private static final Log LOG = LogFactory.getLog(EnigmaLaunchContextFactory.class);
+	public static ContainerLaunchContext createAppMasterLaunchContext(Configuration conf, String appId,
+			String engimaJarPath) {
 
-	public static ContainerLaunchContext createEnigmaLaunchContext(Configuration conf, String appId,
-			String engimaJarPath, int maxContainerMemory, ByteBuffer tokens) {
 		Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
 
-		LOG.info("Copy App Jar from local filesystem to the Enigma Machine container");
-		// Copy the application master jar to the filesystem
+		LOG.info("Copy App Master jar from local filesystem and add to local environment");
+		// Copy the application jar to the filesystem
 		// Create a local resource to point to the destination jar path
 
 		try {
 			LocalResourcesUtil.addToLocalResources(conf, engimaJarPath, YarnConstants.APP_JAR, appId, localResources,
 					null);
-			// Set the env variables to be setup in the env where the
-			// application
-
-			LOG.info("Set the environment for the Enigma Machine container");
+			// Set the env variables
+			LOG.info("Set the environment for the application master");
 			Map<String, String> env = new HashMap<String, String>();
 
-			// put env variables
-			// env.put(DSConstants.DISTRIBUTEDSHELLSCRIPTLOCATION,
-			// hdfsShellScriptLocation);
-
-			// Add AppMaster.jar location to classpath
-			// For now setting all required classpaths including
-			// the classpath to "." for the application jar
+			// add ClassPath to env variables
 			StringBuilder classPathEnv = new StringBuilder(Environment.CLASSPATH.$$())
 					.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./*");
 			for (String c : conf.getStrings(YarnConfiguration.YARN_APPLICATION_CLASSPATH,
@@ -57,23 +49,22 @@ public class EnigmaLaunchContextFactory {
 				classPathEnv.append(c.trim());
 			}
 			classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
+
 			env.put("CLASSPATH", classPathEnv.toString());
 
 			// Set the necessary command to execute the application master
 			Vector<CharSequence> vargs = new Vector<CharSequence>(30);
 
 			// Set java executable command
-			LOG.info("Setting up Enigma Machine container command");
+			LOG.info("Setting up app master command");
 			vargs.add(Environment.JAVA_HOME.$$() + "/bin/java");
-			// Set Xmx based on container memory size
-			vargs.add("-Xmx" + maxContainerMemory + "m");
+			// Set Xmx based on am memory size
+			vargs.add("-Xmx" + YarnConstants.APP_MASTER_MEMORY + "m");
 			// Set class name
-			vargs.add(EnigmaMachine.class.getCanonicalName());
-			// Set params for Engima Machine Container
-			vargs.add("--length " + String.valueOf(100));
+			vargs.add(YarnConstants.APP_MASTER_CLASS);
 
-			vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/EnigmaMachine.stdout");
-			vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/EnigmaMachine.stderr");
+			vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/AppMaster.stdout");
+			vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/AppMaster.stderr");
 
 			// Get final commmand
 			StringBuilder command = new StringBuilder();
@@ -81,18 +72,20 @@ public class EnigmaLaunchContextFactory {
 				command.append(str).append(" ");
 			}
 
-			LOG.info("Completed setting up Enegma Container command " + command.toString());
+			LOG.info("Completed setting up app master command " + command.toString());
 			List<String> commands = new ArrayList<String>();
 			commands.add(command.toString());
-			ContainerLaunchContext ctx = ContainerLaunchContext.newInstance(localResources, env, commands, null,
-					tokens.duplicate(), null);
-			return ctx;
+
+			// Set up the container launch context for the application master
+			ContainerLaunchContext amContainer = ContainerLaunchContext.newInstance(localResources, env, commands, null,
+					null, null);
+			return amContainer;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
-
 		return null;
+
 	}
 
 }

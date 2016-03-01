@@ -6,6 +6,7 @@ import org.apache.hadoop.yarn.api.ContainerManagementProtocol;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 
+import com.tito.enigma.yarn.util.YarnConstants;
 import com.tito.enigma.yarn.worker.EnigmaLaunchContextFactory;
 
 /**
@@ -38,12 +39,9 @@ public class LaunchContainerRunnable implements Runnable {
 	 * eventually dispatches the container start request to the CM.
 	 */
 	public void run() {
-		LOG.info("Setting up container launch container for containerid=" + container.getId());
-		EnigmaLaunchContextFactory factory = new EnigmaLaunchContextFactory(applicationMaster.getConf(),
-				applicationMaster.applicationName);
-		ContainerLaunchContext ctx;
+		LOG.info("Setting up container launch container for containerid=" + container.getId());	
 
-		ctx = factory.createEnigmaLaunchContext("", "", applicationMaster.getAllTokens().duplicate());
+		ContainerLaunchContext ctx = EnigmaLaunchContextFactory.createEnigmaLaunchContext(applicationMaster.getConf(),applicationMaster.getAppAttemptID().toString(),"",YarnConstants.APP_CONTAINER_MEMORY,applicationMaster.getAllTokens());
 		applicationMaster.getContainerListener().addContainer(container.getId(), container);
 		applicationMaster.getNmClientAsync().startContainerAsync(container, ctx);
 
