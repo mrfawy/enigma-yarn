@@ -68,6 +68,9 @@ import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
+import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
@@ -82,9 +85,11 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.security.AMRMTokenIdentifier;
 import org.apache.hadoop.yarn.util.ConverterUtils;
+import org.apache.hadoop.yarn.util.Records;
 import org.apache.log4j.LogManager;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.tito.enigma.yarn.util.YarnConstants;
 
 /**
  * An ApplicationMaster for executing shell commands on a set of launched
@@ -173,6 +178,8 @@ public class ApplicationMaster {
 	private Configuration conf;
 	
 	private String jarPath;
+	private long appJarTimestamp;
+	private long appJarPathLen;
 
 	// Handle to communicate with the Resource Manager
 	@SuppressWarnings("rawtypes")
@@ -333,6 +340,24 @@ public class ApplicationMaster {
 		if (!envs.containsKey(Environment.NM_PORT.name())) {
 			throw new RuntimeException(Environment.NM_PORT.name() + " not set in the environment");
 		}
+		
+		 if (envs.containsKey(YarnConstants.APP_JAR)) {
+		      jarPath = envs.get(YarnConstants.APP_JAR);
+
+		      if (envs.containsKey(YarnConstants.APP_JAR_TIMESTAMP)) {
+		        appJarTimestamp = Long.valueOf(envs.get(YarnConstants.APP_JAR_TIMESTAMP));
+		      }
+		      if (envs.containsKey(YarnConstants.APP_JAR_LENGTH)) {
+		        appJarPathLen = Long.valueOf(envs.get(YarnConstants.APP_JAR_LENGTH));
+		      }
+
+		      if (!jarPath.isEmpty() && (appJarTimestamp <= 0 || appJarPathLen <= 0)) {
+		        LOG.error("Illegal values in env for jar path" + ", path="
+		            + jarPath + ", len=" + appJarPathLen + ", timestamp="+ appJarTimestamp);
+		        throw new IllegalArgumentException(
+		            "Illegal values in env for jar  path");
+		      }
+		    }
 
 		LOG.info("Application master for app" + ", appId=" + appAttemptID.getApplicationId().getId()
 				+ ", clustertimestamp=" + appAttemptID.getApplicationId().getClusterTimestamp() + ", attemptId="
@@ -520,6 +545,27 @@ public class ApplicationMaster {
 		}
 
 	}
+	
+	  public  LocalResource createAppMasterJar()  {
+		    LocalResource appMasterJar = Records.newRecord(LocalResource.class);		   
+		      try {
+		    	  if (!jarPath.isEmpty()) {
+				      appMasterJar.setType(LocalResourceType.FILE);
+				      Path jar = new Path(jarPath);
+				jar = FileSystem.get(conf).makeQualified(jar);
+				  appMasterJar  .setResource(ConverterUtils.getYarnUrlFromPath(jar));
+			      appMasterJar.setTimestamp(appJarTimestamp);
+			      appMasterJar.setSize(appJarPathLen);
+			      appMasterJar.setVisibility(LocalResourceVisibility.APPLICATION);
+			    }
+			    return appMasterJar;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		     
+		  }
 
 	/**
 	 * Setup the request that will be sent to the RM for the container ask.

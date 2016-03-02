@@ -39,9 +39,11 @@ public class LaunchContainerRunnable implements Runnable {
 	 * eventually dispatches the container start request to the CM.
 	 */
 	public void run() {
-		LOG.info("Setting up container launch container for containerid=" + container.getId());	
+		LOG.info("Setting up container launch container for containerid=" + container.getId());
 
-		ContainerLaunchContext ctx = EnigmaLaunchContextFactory.createEnigmaLaunchContext(applicationMaster.getConf(),applicationMaster.getAppAttemptID().toString(),applicationMaster.getJarPath(),YarnConstants.APP_CONTAINER_MEMORY,applicationMaster.getAllTokens());
+		ContainerLaunchContext ctx = EnigmaLaunchContextFactory.createEnigmaLaunchContext(applicationMaster.getConf(),
+				applicationMaster.createAppMasterJar(), YarnConstants.APP_CONTAINER_MEMORY,
+				applicationMaster.getAllTokens());
 		applicationMaster.getContainerListener().addContainer(container.getId(), container);
 		applicationMaster.getNmClientAsync().startContainerAsync(container, ctx);
 

@@ -50,10 +50,10 @@ public class EnigmaMachine {
 	public boolean init(String[] args) throws ParseException {
 
 		CommandLine cliParser = new GnuParser().parse(opts, args);
-
+/*
 		if (args.length == 0) {
 			throw new IllegalArgumentException("No args specified for client to initialize");
-		}
+		}*/
 
 		if (cliParser.hasOption("help")) {
 			printUsage();
@@ -84,23 +84,7 @@ public class EnigmaMachine {
 	public boolean run() throws IOException, YarnException {
 		LOG.info("Running EnigmaMachine");
 
-		/*Configuration conf = new Configuration();
-		FileSystem fs = FileSystem.get(conf);
-		Path inFile = new Path(URI.create(input));
-		Path outFile = new Path(URI.create(output));
-		if (!fs.exists(inFile))
-			throw new RuntimeException("Input file not found");
-		if (!fs.isFile(inFile))
-			throw new RuntimeException("Input should be a file");
-		if (fs.exists(outFile))
-			throw new RuntimeException("Output already exists");
-		
-		FSDataInputStream in = fs.open(inFile);
-		FSDataOutputStream out = fs.create(outFile);
-		IOUtils.copyBytes(in, out, 2048);		
-		in.close();
-		out.close();
-*/
+	System.out.println("Hello from Inside Enigma worker");
 		return true;
 	}
 

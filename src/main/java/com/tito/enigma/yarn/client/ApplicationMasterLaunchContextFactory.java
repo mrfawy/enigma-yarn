@@ -10,6 +10,9 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
@@ -49,6 +52,18 @@ public class ApplicationMasterLaunchContextFactory {
 			classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR).append("./log4j.properties");
 
 			env.put("CLASSPATH", classPathEnv.toString());
+			
+					
+			LocalResource appJarResource = localResources.get(YarnConstants.APP_JAR);
+			FileSystem fs=FileSystem.get(conf);
+		    Path hdfsAppJarPath = new Path(fs.getHomeDirectory(), appJarResource.getResource().getFile());
+		    FileStatus hdfsAppJarStatus = fs.getFileStatus(hdfsAppJarPath);
+		    long hdfsAppJarLength = hdfsAppJarStatus.getLen();
+		    long hdfsAppJarTimestamp = hdfsAppJarStatus.getModificationTime();
+
+		    env.put(YarnConstants.APP_JAR, hdfsAppJarPath.toString());
+		    env.put(YarnConstants.APP_JAR_TIMESTAMP, Long.toString(hdfsAppJarTimestamp));
+		    env.put(YarnConstants.APP_JAR_LENGTH, Long.toString(hdfsAppJarLength));
 
 			// Set the necessary command to execute the application master
 			Vector<CharSequence> vargs = new Vector<CharSequence>(30);
