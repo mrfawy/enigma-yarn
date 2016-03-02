@@ -10,7 +10,6 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
@@ -19,7 +18,6 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 
 import com.tito.enigma.yarn.util.LocalResourcesUtil;
 import com.tito.enigma.yarn.util.YarnConstants;
-import com.tito.enigma.yarn.worker.EnigmaLaunchContextFactory;
 
 public class ApplicationMasterLaunchContextFactory {
 	private static final Log LOG = LogFactory.getLog(ApplicationMasterLaunchContextFactory.class);
@@ -62,7 +60,7 @@ public class ApplicationMasterLaunchContextFactory {
 			vargs.add("-Xmx" + YarnConstants.APP_MASTER_MEMORY + "m");
 			// Set class name
 			vargs.add(YarnConstants.APP_MASTER_CLASS);
-
+			vargs.add("-jar "+engimaJarPath);
 			vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/AppMaster.stdout");
 			vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/AppMaster.stderr");
 

@@ -171,6 +171,8 @@ public class ApplicationMaster {
 
 	// Configuration
 	private Configuration conf;
+	
+	private String jarPath;
 
 	// Handle to communicate with the Resource Manager
 	@SuppressWarnings("rawtypes")
@@ -282,14 +284,9 @@ public class ApplicationMaster {
 	 * @throws IOException
 	 */
 	public boolean init(String[] args) throws ParseException, IOException {
-		Options opts = new Options();
-		opts.addOption("container_memory", true, "Amount of memory in MB to be requested to run the Enigma container");
-		opts.addOption("container_vcores", true,
-				"Amount of virtual cores to be requested to run the  Enigma container");
-		opts.addOption("num_containers", true, "No. of Enigma containers ");
-		opts.addOption("priority", true, "Application Priority. Default 0");
+		Options opts = new Options();	
+		opts.addOption("jar", true, "Jar file containing the Workers");
 		opts.addOption("debug", false, "Dump out debug information");
-
 		opts.addOption("help", false, "Print usage");
 		CommandLine cliParser = new GnuParser().parse(opts, args);
 
@@ -306,7 +303,10 @@ public class ApplicationMaster {
 		if (cliParser.hasOption("debug")) {
 			dumpOutDebugInfo();
 		}
-
+		if(!cliParser.hasOption("jar")){
+			throw new IllegalArgumentException("Missing Jar file for workers");
+		}
+		this.jarPath=cliParser.getOptionValue("jar");
 		Map<String, String> envs = System.getenv();
 
 		if (!envs.containsKey(Environment.CONTAINER_ID.name())) {
@@ -647,6 +647,15 @@ public class ApplicationMaster {
 	public void setConf(Configuration conf) {
 		this.conf = conf;
 	}
+
+	public String getJarPath() {
+		return jarPath;
+	}
+
+	public void setJarPath(String jarPath) {
+		this.jarPath = jarPath;
+	}
+	
 	
 	
 	

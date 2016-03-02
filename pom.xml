@@ -69,7 +69,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.tito.enigma.Client</mainClass>
+							<mainClass>com.tito.enigma.yarn.client.Client</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
