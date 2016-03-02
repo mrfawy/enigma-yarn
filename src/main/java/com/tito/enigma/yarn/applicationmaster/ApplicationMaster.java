@@ -19,15 +19,10 @@
 package com.tito.enigma.yarn.applicationmaster;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +35,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
-import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -56,28 +49,17 @@ import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
-import org.apache.hadoop.yarn.api.ApplicationMasterProtocol;
-import org.apache.hadoop.yarn.api.ContainerManagementProtocol;
-import org.apache.hadoop.yarn.api.protocolrecords.AllocateRequest;
-import org.apache.hadoop.yarn.api.protocolrecords.AllocateResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.FinishApplicationMasterRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
-import org.apache.hadoop.yarn.api.protocolrecords.StartContainerRequest;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
-import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.hadoop.yarn.api.records.ResourceRequest;
-import org.apache.hadoop.yarn.api.records.timeline.TimelineEntity;
-import org.apache.hadoop.yarn.api.records.timeline.TimelineEvent;
 import org.apache.hadoop.yarn.client.api.AMRMClient.ContainerRequest;
-import org.apache.hadoop.yarn.client.api.TimelineClient;
 import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync;
 import org.apache.hadoop.yarn.client.api.async.NMClientAsync;
 import org.apache.hadoop.yarn.client.api.async.impl.NMClientAsyncImpl;
@@ -91,71 +73,6 @@ import org.apache.log4j.LogManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.tito.enigma.yarn.util.YarnConstants;
 
-/**
- * An ApplicationMaster for executing shell commands on a set of launched
- * containers using the YARN framework.
- * 
- * <p>
- * This class is meant to act as an example on how to write yarn-based
- * application masters.
- * </p>
- * 
- * <p>
- * The ApplicationMaster is started on a container by the
- * <code>ResourceManager</code>'s launcher. The first thing that the
- * <code>ApplicationMaster</code> needs to do is to connect and register itself
- * with the <code>ResourceManager</code>. The registration sets up information
- * within the <code>ResourceManager</code> regarding what host:port the
- * ApplicationMaster is listening on to provide any form of functionality to a
- * client as well as a tracking url that a client can use to keep track of
- * status/job history if needed. However, in the distributedshell, trackingurl
- * and appMasterHost:appMasterRpcPort are not supported.
- * </p>
- * 
- * <p>
- * The <code>ApplicationMaster</code> needs to send a heartbeat to the
- * <code>ResourceManager</code> at regular intervals to inform the
- * <code>ResourceManager</code> that it is up and alive. The
- * {@link ApplicationMasterProtocol#allocate} to the
- * <code>ResourceManager</code> from the <code>ApplicationMaster</code> acts as
- * a heartbeat.
- * 
- * <p>
- * For the actual handling of the job, the <code>ApplicationMaster</code> has to
- * request the <code>ResourceManager</code> via {@link AllocateRequest} for the
- * required no. of containers using {@link ResourceRequest} with the necessary
- * resource specifications such as node location, computational
- * (memory/disk/cpu) resource requirements. The <code>ResourceManager</code>
- * responds with an {@link AllocateResponse} that informs the
- * <code>ApplicationMaster</code> of the set of newly allocated containers,
- * completed containers as well as current state of available resources.
- * </p>
- * 
- * <p>
- * For each allocated container, the <code>ApplicationMaster</code> can then set
- * up the necessary launch context via {@link ContainerLaunchContext} to specify
- * the allocated container id, local resources required by the executable, the
- * environment to be setup for the executable, commands to execute, etc. and
- * submit a {@link StartContainerRequest} to the
- * {@link ContainerManagementProtocol} to launch and execute the defined
- * commands on the given allocated container.
- * </p>
- * 
- * <p>
- * The <code>ApplicationMaster</code> can monitor the launched container by
- * either querying the <code>ResourceManager</code> using
- * {@link ApplicationMasterProtocol#allocate} to get updates on completed
- * containers or via the {@link ContainerManagementProtocol} by querying for the
- * status of the allocated container's {@link ContainerId}.
- *
- * <p>
- * After the job has been completed, the <code>ApplicationMaster</code> has to
- * send a {@link FinishApplicationMasterRequest} to the
- * <code>ResourceManager</code> to inform it that the
- * <code>ApplicationMaster</code> has been completed.
- */
-@InterfaceAudience.Public
-@InterfaceStability.Unstable
 public class ApplicationMaster {
 
 	private static final Log LOG = LogFactory.getLog(ApplicationMaster.class);
@@ -171,12 +88,9 @@ public class ApplicationMaster {
 	public static enum DSEntity {
 		DS_APP_ATTEMPT, DS_CONTAINER
 	}
-	
-	public static final String applicationName="engima-yarn";
 
-	// Configuration
 	private Configuration conf;
-	
+
 	private String jarPath;
 	private long appJarTimestamp;
 	private long appJarPathLen;
@@ -184,9 +98,6 @@ public class ApplicationMaster {
 	// Handle to communicate with the Resource Manager
 	@SuppressWarnings("rawtypes")
 	private AMRMClientAsync amRMClient;
-
-	// In both secure and non-secure modes, this points to the job-submitter.
-	private UserGroupInformation appSubmitterUgi;
 
 	// Handle to communicate with the Node Manager
 	private NMClientAsync nmClientAsync;
@@ -291,7 +202,7 @@ public class ApplicationMaster {
 	 * @throws IOException
 	 */
 	public boolean init(String[] args) throws ParseException, IOException {
-		Options opts = new Options();	
+		Options opts = new Options();
 		opts.addOption("jar", true, "Jar file containing the Workers");
 		opts.addOption("debug", false, "Dump out debug information");
 		opts.addOption("help", false, "Print usage");
@@ -310,10 +221,10 @@ public class ApplicationMaster {
 		if (cliParser.hasOption("debug")) {
 			dumpOutDebugInfo();
 		}
-		if(!cliParser.hasOption("jar")){
+		if (!cliParser.hasOption("jar")) {
 			throw new IllegalArgumentException("Missing Jar file for workers");
 		}
-		this.jarPath=cliParser.getOptionValue("jar");
+		this.jarPath = cliParser.getOptionValue("jar");
 		Map<String, String> envs = System.getenv();
 
 		if (!envs.containsKey(Environment.CONTAINER_ID.name())) {
@@ -340,24 +251,23 @@ public class ApplicationMaster {
 		if (!envs.containsKey(Environment.NM_PORT.name())) {
 			throw new RuntimeException(Environment.NM_PORT.name() + " not set in the environment");
 		}
-		
-		 if (envs.containsKey(YarnConstants.APP_JAR)) {
-		      jarPath = envs.get(YarnConstants.APP_JAR);
 
-		      if (envs.containsKey(YarnConstants.APP_JAR_TIMESTAMP)) {
-		        appJarTimestamp = Long.valueOf(envs.get(YarnConstants.APP_JAR_TIMESTAMP));
-		      }
-		      if (envs.containsKey(YarnConstants.APP_JAR_LENGTH)) {
-		        appJarPathLen = Long.valueOf(envs.get(YarnConstants.APP_JAR_LENGTH));
-		      }
+		if (envs.containsKey(YarnConstants.APP_JAR)) {
+			jarPath = envs.get(YarnConstants.APP_JAR);
 
-		      if (!jarPath.isEmpty() && (appJarTimestamp <= 0 || appJarPathLen <= 0)) {
-		        LOG.error("Illegal values in env for jar path" + ", path="
-		            + jarPath + ", len=" + appJarPathLen + ", timestamp="+ appJarTimestamp);
-		        throw new IllegalArgumentException(
-		            "Illegal values in env for jar  path");
-		      }
-		    }
+			if (envs.containsKey(YarnConstants.APP_JAR_TIMESTAMP)) {
+				appJarTimestamp = Long.valueOf(envs.get(YarnConstants.APP_JAR_TIMESTAMP));
+			}
+			if (envs.containsKey(YarnConstants.APP_JAR_LENGTH)) {
+				appJarPathLen = Long.valueOf(envs.get(YarnConstants.APP_JAR_LENGTH));
+			}
+
+			if (!jarPath.isEmpty() && (appJarTimestamp <= 0 || appJarPathLen <= 0)) {
+				LOG.error("Illegal values in env for jar path" + ", path=" + jarPath + ", len=" + appJarPathLen
+						+ ", timestamp=" + appJarTimestamp);
+				throw new IllegalArgumentException("Illegal values in env for jar  path");
+			}
+		}
 
 		LOG.info("Application master for app" + ", appId=" + appAttemptID.getApplicationId().getId()
 				+ ", clustertimestamp=" + appAttemptID.getApplicationId().getClusterTimestamp() + ", attemptId="
@@ -401,25 +311,24 @@ public class ApplicationMaster {
 		}
 
 		extractTokens();
-		
+
 		// AM to RM client listener
 		amRMClient = AMRMClientAsync.createAMRMClientAsync(1000, new RMCallbackHandler(this));
 		amRMClient.init(conf);
 		amRMClient.start();
 
-		// AM to NM  listener
-		containerListener=new NMCallbackHandler(this);
+		// AM to NM listener
+		containerListener = new NMCallbackHandler(this);
 		nmClientAsync = new NMClientAsyncImpl(containerListener);
 		nmClientAsync.init(conf);
 		nmClientAsync.start();
 
-		
 		// Register with ResourceManager to start heartbeating to the RM
 		appMasterHostname = NetUtils.getHostname();
 		RegisterApplicationMasterResponse response = amRMClient.registerApplicationMaster(appMasterHostname,
 				appMasterRpcPort, appMasterTrackingUrl);
-		
-		// cluster information capability as per  resource manager
+
+		// cluster information capability as per resource manager
 		int maxMem = response.getMaximumResourceCapability().getMemory();
 		LOG.info("Max mem capabililty of resources in this cluster " + maxMem);
 
@@ -445,8 +354,7 @@ public class ApplicationMaster {
 		numAllocatedContainers.addAndGet(previousAMRunningContainers.size());
 
 		int numTotalContainersToRequest = numTotalContainers - previousAMRunningContainers.size();
-		
-		
+
 		// Setup ask for containers from RM
 		// Send request for containers to RM
 		// Until we get our fully allocated quota, we keep on polling RM for
@@ -464,7 +372,6 @@ public class ApplicationMaster {
 			LOG.error("App Attempt start event coud not be pulished for " + appAttemptID.toString(), e);
 		}
 	}
-
 
 	@VisibleForTesting
 	protected boolean finish() {
@@ -545,27 +452,27 @@ public class ApplicationMaster {
 		}
 
 	}
-	
-	  public  LocalResource createAppMasterJar()  {
-		    LocalResource appMasterJar = Records.newRecord(LocalResource.class);		   
-		      try {
-		    	  if (!jarPath.isEmpty()) {
-				      appMasterJar.setType(LocalResourceType.FILE);
-				      Path jar = new Path(jarPath);
+
+	public LocalResource createAppMasterJar() {
+		LocalResource appMasterJar = Records.newRecord(LocalResource.class);
+		try {
+			if (!jarPath.isEmpty()) {
+				appMasterJar.setType(LocalResourceType.FILE);
+				Path jar = new Path(jarPath);
 				jar = FileSystem.get(conf).makeQualified(jar);
-				  appMasterJar  .setResource(ConverterUtils.getYarnUrlFromPath(jar));
-			      appMasterJar.setTimestamp(appJarTimestamp);
-			      appMasterJar.setSize(appJarPathLen);
-			      appMasterJar.setVisibility(LocalResourceVisibility.APPLICATION);
-			    }
-			    return appMasterJar;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				appMasterJar.setResource(ConverterUtils.getYarnUrlFromPath(jar));
+				appMasterJar.setTimestamp(appJarTimestamp);
+				appMasterJar.setSize(appJarPathLen);
+				appMasterJar.setVisibility(LocalResourceVisibility.APPLICATION);
 			}
-			return null;
-		     
-		  }
+			return appMasterJar;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
+	}
 
 	/**
 	 * Setup the request that will be sent to the RM for the container ask.
@@ -701,11 +608,5 @@ public class ApplicationMaster {
 	public void setJarPath(String jarPath) {
 		this.jarPath = jarPath;
 	}
-	
-	
-	
-	
-	
-	
 
 }
