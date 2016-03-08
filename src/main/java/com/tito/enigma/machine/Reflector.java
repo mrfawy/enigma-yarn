@@ -11,7 +11,7 @@ public class Reflector implements SwitchIF {
 	public byte[] signalIn(byte[] in) {
 		byte[] result = new byte[256];
 		for (int i = 0; i < in.length; i++) {
-			result[i] = map[Util.unsignedToBytes(in[i])];
+			result[i] = map[Util.toUnsigned(in[i])];
 		}
 		return result;
 

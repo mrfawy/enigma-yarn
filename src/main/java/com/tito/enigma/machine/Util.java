@@ -1,7 +1,7 @@
 package com.tito.enigma.machine;
 
 public class Util {
-	public static int unsignedToBytes(byte b) {
+	public static int toUnsigned(byte b) {
 		return b & 0xFF;
 	}
 	

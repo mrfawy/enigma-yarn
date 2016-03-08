@@ -65,8 +65,8 @@ public class ConfigGenerator {
 		byte[] result = Util.getArray(256);
 
 		for (int i = 0; i < map.length - 1; i += 2) {
-			result[Util.unsignedToBytes(map[i])] = map[i + 1];
-			result[Util.unsignedToBytes(map[i + 1])] = map[i];
+			result[Util.toUnsigned(map[i])] = map[i + 1];
+			result[Util.toUnsigned(map[i + 1])] = map[i];
 
 		}
 		return result;

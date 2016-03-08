@@ -64,8 +64,8 @@ public class ConfigGeneratorTest {
 		// reflector for each i->j , exists j->i
 		for (int i = 0; i < rc.length; i++) {
 
-			Assert.assertEquals(Util.unsignedToBytes((byte) i),
-					Util.unsignedToBytes(rc[Util.unsignedToBytes(rc[Util.unsignedToBytes((byte) i)])]));
+			Assert.assertEquals(Util.toUnsigned((byte) i),
+					Util.toUnsigned(rc[Util.toUnsigned(rc[Util.toUnsigned((byte) i)])]));
 
 		}
 

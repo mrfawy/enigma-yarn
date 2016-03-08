@@ -16,7 +16,6 @@ import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 
-import com.tito.enigma.machine.EnigmaMachine;
 import com.tito.enigma.yarn.util.YarnConstants;
 
 public class EnigmaLaunchContextFactory {
@@ -24,7 +23,8 @@ public class EnigmaLaunchContextFactory {
 	private static final Log LOG = LogFactory.getLog(EnigmaLaunchContextFactory.class);
 
 	public static ContainerLaunchContext createEnigmaLaunchContext(Configuration conf, LocalResource appJar,
-			int maxContainerMemory, ByteBuffer tokens) {
+			Class mainClass, Map<String, String> args, Map<String, String> envVariables, int maxContainerMemory,
+			ByteBuffer tokens) {
 		Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
 
 		LOG.info("Copy App Jar from local filesystem to the Enigma Machine container");
@@ -46,6 +46,11 @@ public class EnigmaLaunchContextFactory {
 			classPathEnv.append(c.trim());
 		}
 		env.put("CLASSPATH", classPathEnv.toString());
+		if (envVariables != null) {
+			for (String envVar : envVariables.keySet()) {
+				env.put(envVar, envVariables.get(envVar));
+			}
+		}
 
 		// Set the necessary command to execute the application master
 		Vector<CharSequence> vargs = new Vector<CharSequence>(30);
@@ -56,9 +61,12 @@ public class EnigmaLaunchContextFactory {
 		// Set Xmx based on container memory size
 		vargs.add("-Xmx" + maxContainerMemory + "m");
 		// Set class name
-		vargs.add(EnigmaMachine.class.getCanonicalName());
-		// Set params for Engima Machine Container
-		vargs.add("--length " + String.valueOf(100));
+		vargs.add(mainClass.getCanonicalName());
+		if (args != null) {
+			for (String arg : args.keySet()) {
+				vargs.add(String.format("--%s %s", arg, args.get(arg)));
+			}
+		}
 
 		vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/EnigmaMachine.stdout");
 		vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/EnigmaMachine.stderr");
