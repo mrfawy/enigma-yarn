@@ -2,7 +2,8 @@ package com.tito.enigma.machine;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -11,14 +12,10 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 
+import com.tito.enigma.machine.config.MachineConfig;
+import com.tito.enigma.machine.config.RotorConfig;
 import com.tito.enigma.yarn.client.Client;
 
 public class EnigmaMachine {
@@ -31,12 +28,39 @@ public class EnigmaMachine {
 	// Command line options
 	private Options opts;
 
+	private MachineConfig machineConfig;
+
+	List<Rotor> rotors;
+	Reflector reflector;
+	PlugBoard plugBoard;
+
 	public EnigmaMachine() {
+
+	}
+
+	public EnigmaMachine(MachineConfig machineConfig) {
 		opts = new Options();
 		opts.addOption("length", true, "The length of the generate mapad byte stream");
 		opts.addOption("input", true, "file to read");
 		opts.addOption("output", true, "file to write");
 		opts.addOption("help", false, "Print usage");
+		this.machineConfig = machineConfig;
+		initFromConfig();
+	}
+	
+	public void generateLength(BigDecimal n){
+		
+	}
+
+	private void initFromConfig() {
+
+		rotors = new ArrayList<>();
+		for (RotorConfig rc : machineConfig.getRotorConfigs()) {
+			rotors.add(new Rotor(rc));
+		}
+		reflector = new Reflector(machineConfig.getReflectorConfig());
+		plugBoard = new PlugBoard(machineConfig.getPlugBoardConfig());
+
 	}
 
 	/**
@@ -50,10 +74,10 @@ public class EnigmaMachine {
 	public boolean init(String[] args) throws ParseException {
 
 		CommandLine cliParser = new GnuParser().parse(opts, args);
-/*
-		if (args.length == 0) {
-			throw new IllegalArgumentException("No args specified for client to initialize");
-		}*/
+		/*
+		 * if (args.length == 0) { throw new IllegalArgumentException(
+		 * "No args specified for client to initialize"); }
+		 */
 
 		if (cliParser.hasOption("help")) {
 			printUsage();
@@ -84,7 +108,7 @@ public class EnigmaMachine {
 	public boolean run() throws IOException, YarnException {
 		LOG.info("Running EnigmaMachine");
 
-	System.out.println("Hello from Inside Enigma worker");
+		System.out.println("Hello from Inside Enigma worker");
 		return true;
 	}
 
