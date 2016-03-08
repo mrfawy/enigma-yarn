@@ -77,4 +77,7 @@
   <classpathentry kind="var" path="M2_REPO/org/apache/hadoop/hadoop-yarn-server-common/2.5.1-mapr-1501/hadoop-yarn-server-common-2.5.1-mapr-1501.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/fusesource/leveldbjni/leveldbjni-all/1.8/leveldbjni-all-1.8.jar"/>
   <classpathentry kind="var" path="M2_REPO/junit/junit/4.8.2/junit-4.8.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-databind/2.7.2/jackson-databind-2.7.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-annotations/2.7.0/jackson-annotations-2.7.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-core/2.7.2/jackson-core-2.7.2.jar"/>
 </classpath>

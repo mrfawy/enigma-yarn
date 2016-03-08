@@ -16,6 +16,7 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 
 import com.tito.enigma.machine.config.MachineConfig;
 import com.tito.enigma.machine.config.RotorConfig;
+import com.tito.enigma.queue.Queue;
 import com.tito.enigma.yarn.client.Client;
 
 public class EnigmaMachine {
@@ -27,22 +28,18 @@ public class EnigmaMachine {
 	private Options opts;
 
 	private MachineConfig machineConfig;
+	private String id;
 
 	List<Rotor> rotors;
 	Reflector reflector;
 	PlugBoard plugBoard;
 
 	public EnigmaMachine() {
-
-	}
-
-	public EnigmaMachine(MachineConfig machineConfig) {
 		opts = new Options();
-		opts.addOption("length", true, "The length of the generate mapad byte stream");
-		opts.addOption("input", true, "file to read");
-		opts.addOption("output", true, "file to write");
-		opts.addOption("help", false, "Print usage");
-		this.machineConfig = machineConfig;
+		opts.addOption("length", true, "The length of the generated map byte stream");
+		opts.addOption("id", true, "configuration Id");
+		opts.addOption("keyDir", true, "");
+		opts.addOption("help", false, "Print usage");		
 		rotors = new ArrayList<>();
 		for (RotorConfig rc : machineConfig.getRotorConfigs()) {
 			rotors.add(new Rotor(rc));
@@ -52,7 +49,9 @@ public class EnigmaMachine {
 	}
 
 	public void generateLength(long n) {
-
+		byte[] buffer = new byte[256 * 1000];
+		int bufferOffset = 0;
+		int bufferCount = 0;
 		byte[] input = Util.getArray(256);
 		for (long i = 0; i < n; i++) {
 			input = plugBoard.signalIn(input);
@@ -73,8 +72,24 @@ public class EnigmaMachine {
 				rotateFlag = rotors.get(rotorIndex++).rotate();
 			} while (rotateFlag == true);
 
+			if (bufferOffset + input.length <= buffer.length) {
+				System.arraycopy(input, 0, buffer, bufferOffset, input.length);
+				bufferOffset += input.length;
+
+			} else {// if buffer is full
+				Queue.geteInstance().put(id, String.valueOf(bufferCount), buffer);
+				bufferOffset = 0;
+				bufferCount++;
+				System.arraycopy(input, 0, buffer, bufferOffset, input.length);
+				bufferOffset += input.length;
+			}
+
 		}
-		System.out.println(input);
+		// copy the rest of n if exists
+		if (bufferOffset != 0) {
+			Queue.geteInstance().put(id, String.valueOf(bufferCount), buffer);
+		}
+
 	}
 
 	/**
