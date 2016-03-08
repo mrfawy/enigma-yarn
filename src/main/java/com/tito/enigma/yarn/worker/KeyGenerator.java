@@ -29,10 +29,10 @@ public class KeyGenerator {
 
 	public KeyGenerator() {
 		opts = new Options();
-		opts.addOption("id", true, "configuration Id");
+		opts.addOption("id", true, "configuration Id");		
+		opts.addOption("keyDir", true, "");		
 		opts.addOption("minRotorCount", true, "min Rotor Count for a machine");
-		opts.addOption("maxRotorCount", true, "max Rotor Count");
-		opts.addOption("keyDir", true, "");
+		opts.addOption("maxRotorCount", true, "max Rotor Count");		
 		opts.addOption("help", false, "Print usage");
 	}
 

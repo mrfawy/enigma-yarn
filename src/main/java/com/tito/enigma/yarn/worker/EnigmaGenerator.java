@@ -22,7 +22,6 @@ import com.tito.enigma.machine.PlugBoard;
 import com.tito.enigma.machine.Reflector;
 import com.tito.enigma.machine.Rotor;
 import com.tito.enigma.machine.Util;
-import com.tito.enigma.machine.config.ConfigGenerator;
 import com.tito.enigma.machine.config.MachineConfig;
 import com.tito.enigma.machine.config.RotorConfig;
 import com.tito.enigma.queue.Queue;
@@ -37,6 +36,16 @@ public class EnigmaGenerator {
 	List<Rotor> rotors;
 	Reflector reflector;
 	PlugBoard plugBoard;
+	
+	public EnigmaGenerator() {
+		opts = new Options();
+		opts.addOption("id", true, "configuration Id");
+		opts.addOption("keyDir", true, "");
+		opts.addOption("length", true, "The length of the generated map byte stream");
+		opts.addOption("help", false, "Print usage");
+
+	}
+
 
 	private void printUsage() {
 		new HelpFormatter().printHelp("EnigmaGenerator", opts);
@@ -53,7 +62,6 @@ public class EnigmaGenerator {
 			throw new RuntimeException("Key file doesn't exist" + keyFile);
 		}
 		FSDataInputStream fin = fs.open(keyFile);
-		ConfigGenerator gen = new ConfigGenerator();
 		String confJson = fin.readUTF();
 		MachineConfig machineConfig = new ObjectMapper().readValue(confJson, MachineConfig.class);
 		rotors = new ArrayList<>();
@@ -113,15 +121,7 @@ public class EnigmaGenerator {
 
 	}
 
-	public EnigmaGenerator() {
-		opts = new Options();
-		opts.addOption("id", true, "configuration Id");
-		opts.addOption("keyDir", true, "");
-		opts.addOption("length", true, "The length of the generated map byte stream");
-		opts.addOption("help", false, "Print usage");
-
-	}
-
+	
 	public boolean init(String[] args) throws ParseException {
 
 		CommandLine cliParser = new GnuParser().parse(opts, args);
