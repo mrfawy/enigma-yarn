@@ -1,9 +1,25 @@
 package com.tito.enigma.machine;
 
-public class Reflector {
-	
+public class Reflector implements SwitchIF {
+	byte[] map;
+
 	public Reflector(byte[] config) {
-		// TODO Auto-generated constructor stub
+		this.map = config;
+	}
+
+	@Override
+	public byte[] signalIn(byte[] in) {
+		byte[] result = new byte[256];
+		for (int i = 0; i < in.length; i++) {
+			result[i] = map[Util.unsignedToBytes(in[i])];
+		}
+		return result;
+
+	}
+
+	@Override
+	public byte[] reverseSignalIn(byte[] in) {
+		return signalIn(in);
 	}
 
 }

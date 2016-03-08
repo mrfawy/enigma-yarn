@@ -22,8 +22,6 @@ public class EnigmaMachine {
 	private static final Log LOG = LogFactory.getLog(Client.class);
 
 	private BigDecimal length;
-	private String input;
-	private String output;
 
 	// Command line options
 	private Options opts;
@@ -45,22 +43,38 @@ public class EnigmaMachine {
 		opts.addOption("output", true, "file to write");
 		opts.addOption("help", false, "Print usage");
 		this.machineConfig = machineConfig;
-		initFromConfig();
-	}
-	
-	public void generateLength(BigDecimal n){
-		
-	}
-
-	private void initFromConfig() {
-
 		rotors = new ArrayList<>();
 		for (RotorConfig rc : machineConfig.getRotorConfigs()) {
 			rotors.add(new Rotor(rc));
 		}
 		reflector = new Reflector(machineConfig.getReflectorConfig());
 		plugBoard = new PlugBoard(machineConfig.getPlugBoardConfig());
+	}
 
+	public void generateLength(long n) {
+
+		byte[] input = Util.getArray(256);
+		for (long i = 0; i < n; i++) {
+			input = plugBoard.signalIn(input);
+			for (Rotor r : rotors) {
+				input = r.signalIn(input);
+				r.rotate();
+			}
+			input = reflector.signalIn(input);
+			for (int j = rotors.size() - 1; j >= 0; j--) {
+				input = rotors.get(j).reverseSignalIn(input);
+			}
+			input = plugBoard.reverseSignalIn(input);
+
+			// process stepping/rotating
+			boolean rotateFlag;
+			int rotorIndex = 0;
+			do {
+				rotateFlag = rotors.get(rotorIndex++).rotate();
+			} while (rotateFlag == true);
+
+		}
+		System.out.println(input);
 	}
 
 	/**
@@ -92,10 +106,10 @@ public class EnigmaMachine {
 			LOG.info("Generate stream of length:" + length);
 		}
 		if (cliParser.hasOption("input")) {
-			input = cliParser.getOptionValue("input");
+			// input = cliParser.getOptionValue("input");
 		}
 		if (cliParser.hasOption("output")) {
-			output = cliParser.getOptionValue("output");
+			// output = cliParser.getOptionValue("output");
 		}
 
 		return true;

@@ -13,7 +13,7 @@ public class Rotor implements SwitchIF {
 	private BiMap<Byte, Byte> map;
 
 	public Rotor(RotorConfig rc) {
-		offset = rc.getOffset();
+		offset = Util.unsignedToBytes(rc.getOffset());
 		notchIndexSet = rc.getNotchSet();
 		map = HashBiMap.create(rc.getMap().length);
 		for (int i = 0; i < rc.getMap().length; i++) {
@@ -24,7 +24,7 @@ public class Rotor implements SwitchIF {
 	public byte[] signalIn(byte[] in) {
 		byte[] result = new byte[256];
 		for (int i = 0; i < in.length; i++) {
-			int j = (offset + i) % 256;
+			int j =(offset + i) % 256;
 			result[i] = map.get(in[j]);
 		}
 		return result;
