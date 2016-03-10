@@ -63,7 +63,7 @@ public class NMCallbackHandler implements NMClientAsync.CallbackHandler {
 		LOG.error("Failed to start Container " + containerId);
 		containers.remove(containerId);
 		applicationMaster.getCurrentPhaseManager().getNumCompletedContainers().incrementAndGet();
-		applicationMaster.getNumFailedContainers().incrementAndGet();
+		applicationMaster.getCurrentPhaseManager().getNumFailedContainers().incrementAndGet();
 	}
 
 	@Override

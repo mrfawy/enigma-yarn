@@ -1,25 +1,37 @@
 package com.tito.enigma.yarn.phase;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.tito.enigma.yarn.task.Task;
-
-public abstract class Phase {
+public class Phase implements Runnable {
 
 	private String id;
-	private List<Task> taskList;
-	
-	public Phase(String id) {
-		super();
-		this.id = id;
-		taskList=new ArrayList<>();
-	}
-
 	private PhaseManager phaseManager;
 	private PhaseStatus phaseStatus;
-	
-	
+
+	@Override
+	public void run() {
+		phaseManager.start();
+		phaseStatus=PhaseStatus.RUNNING;
+		while(!phaseManager.hasCompleted()){
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if(phaseManager.hasCompletedSuccessfully()){
+			phaseStatus=PhaseStatus.SUCCESSED;
+		}
+		else{
+			phaseStatus=PhaseStatus.FAILED;
+		}
+	}
+
+	public Phase(String id, PhaseManager phaseManager) {
+		super();
+		this.id = id;
+		this.phaseManager = phaseManager;
+		this.phaseManager.setPhase(this);
+	}
 
 	public String getId() {
 		return id;
@@ -27,14 +39,6 @@ public abstract class Phase {
 
 	public void setId(String id) {
 		this.id = id;
-	}
-
-	public List<Task> getTaskList() {
-		return taskList;
-	}
-
-	public void setTaskList(List<Task> taskList) {
-		this.taskList = taskList;
 	}
 
 	public PhaseManager getPhaseManager() {

@@ -3,27 +3,24 @@ package com.tito.enigma.yarn.task;
 import java.util.Map;
 
 public class TaskContext {
-	
-	private Class taskClass;
+
+	private Class taskletClass;
 	private Map<String, String> args;
 	private Map<String, String> envVariables;
-	private int maxMemory; // optional to set assigned container memory, use it for larger tasks
-	
-	public TaskContext() {
-		// TODO Auto-generated constructor stub
-	}
+	private int maxMemory; // optional to set assigned container memory, use it
+							// for larger tasks
 
-	public Class getTaskClass() {
-		return taskClass;
-	}
-
-	public TaskContext(Class taskClass) {
+	public TaskContext(Class taskletClass) {
 		super();
-		this.taskClass = taskClass;
+		this.taskletClass = taskletClass;
 	}
 
-	public void setTaskClass(Class taskClass) {
-		this.taskClass = taskClass;
+	public Class getTaskletClass() {
+		return taskletClass;
+	}
+
+	public void setTaskletClass(Class taskletClass) {
+		this.taskletClass = taskletClass;
 	}
 
 	public Map<String, String> getArgs() {
@@ -49,6 +46,5 @@ public class TaskContext {
 	public void setMaxMemory(int maxMemory) {
 		this.maxMemory = maxMemory;
 	}
-	
 
 }

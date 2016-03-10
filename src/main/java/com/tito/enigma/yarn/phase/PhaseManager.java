@@ -44,6 +44,8 @@ public abstract class PhaseManager {
 
 	private Phase phase;
 
+	protected List<Task> taskList = new ArrayList<>();
+
 	protected Queue<Task> pendingTasks = new LinkedList<>();
 	protected Queue<Task> failedTasks = new LinkedList<>();
 	protected Queue<Task> completedTasks = new LinkedList<>();
@@ -57,9 +59,9 @@ public abstract class PhaseManager {
 
 	private List<Thread> launchThreads = new ArrayList<Thread>();
 
-	public PhaseManager(ApplicationMaster appMaster, Phase phase) {
+	public PhaseManager(ApplicationMaster appMaster) {
 		this.applicationMaster = appMaster;
-		this.phase = phase;
+
 	}
 
 	public Configuration getConf() {
@@ -87,7 +89,7 @@ public abstract class PhaseManager {
 	}
 
 	public void RegisterTask(Task task) {
-		phase.getTaskList().add(task);
+		taskList.add(task);
 		task.setStatus(TaskStatus.PENDING);
 		this.pendingTasks.add(task);
 	}
@@ -186,10 +188,11 @@ public abstract class PhaseManager {
 	public abstract void defineTasks();
 
 	public boolean hasCompleted() {
-		return completedTasks.size() == phase.getTaskList().size();
+		return completedTasks.size() == taskList.size();
 	}
+
 	public boolean hasCompletedSuccessfully() {
-		return hasCompleted()&&failedTasks.size()==0;
+		return hasCompleted() && failedTasks.size() == 0;
 	}
 
 	public AtomicInteger getNumRequestedContainers() {
@@ -231,6 +234,5 @@ public abstract class PhaseManager {
 	public void setPhase(Phase phase) {
 		this.phase = phase;
 	}
-	
 
 }

@@ -24,9 +24,10 @@ import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Queue;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -51,15 +52,11 @@ import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
-import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
-import org.apache.hadoop.yarn.api.records.Priority;
-import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.hadoop.yarn.client.api.AMRMClient.ContainerRequest;
 import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync;
 import org.apache.hadoop.yarn.client.api.async.NMClientAsync;
 import org.apache.hadoop.yarn.client.api.async.impl.NMClientAsyncImpl;
@@ -73,17 +70,26 @@ import org.apache.log4j.LogManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.tito.enigma.yarn.phase.Phase;
 import com.tito.enigma.yarn.phase.PhaseManager;
+import com.tito.enigma.yarn.phase.PhaseStatus;
 import com.tito.enigma.yarn.util.YarnConstants;
 
-public abstract class ApplicationMaster {
+public abstract class ApplicationMaster implements ApplicationMasterIF {
+
+	private Options options;
 
 	private static final Log LOG = LogFactory.getLog(ApplicationMaster.class);
 
 	List<Phase> phaseList = new ArrayList<>();
+	Queue<Phase> pendingPhases = new LinkedList<>();
+	Queue<Phase> failedPhases = new LinkedList<>();
+	Queue<Phase> completedPhases = new LinkedList<>();
+
+	List<Thread> phaseThreads = new ArrayList<>();
 	Phase currentPhase;
-	
-	public void registerPhase(Phase phase){
+
+	public void registerPhase(Phase phase) {
 		phaseList.add(phase);
+		pendingPhases.add(phase);
 	}
 
 	Phase getCurrentPhase() {
@@ -131,42 +137,29 @@ public abstract class ApplicationMaster {
 	// Tracking url to which app master publishes info for clients to monitor
 	private String appMasterTrackingUrl = "";
 
-	protected int numTotalContainers = 1;
-	// Memory to request for the container on which the shell command will run
-	private int containerMemory = 100;
-	private int containerVirtualCores = 1;
-	private int requestPriority;
-
-	protected AtomicInteger numRequestedContainers = new AtomicInteger();
-	protected AtomicInteger numAllocatedContainers = new AtomicInteger();
-	private AtomicInteger numCompletedContainers = new AtomicInteger();
-	private AtomicInteger numFailedContainers = new AtomicInteger();
-
 	private volatile boolean done;
 
 	private ByteBuffer allTokens;
 
-	// Launch threads
-	private List<Thread> launchThreads = new ArrayList<Thread>();
-
 	private TimeLinePublisher timeLinePublisher;
-
-	public PhaseManager getPhaseManager() {
-		return null;
-	}
-
-	public abstract Options getOptions();
-
-	public static ApplicationMaster getInstance() {
-		return null;
-	}
 
 	public static void main(String[] args) {
 		boolean result = false;
 		try {
-			ApplicationMaster appMaster = getInstance();
+			Options ops = new Options();
+			ops.addOption("AppMasterClass", true, "Application Master Class");
+			CommandLine cliParser1 = new GnuParser().parse(ops, args);
+			if (!cliParser1.hasOption("AppMasterClass")) {
+				throw new RuntimeException("AppMasterClass is not specified failed to load Application Master");
+			}
+
+			ApplicationMaster appMaster = (ApplicationMaster) Class.forName(cliParser1.getOptionValue("AppMasterClass"))
+					.newInstance();
+
 			LOG.info("Initializing ApplicationMaster");
-			boolean doRun = appMaster.init(args);
+			appMaster.setupOptionsAll();
+			CommandLine cliParser = new GnuParser().parse(appMaster.getOptions(), args);
+			boolean doRun = appMaster.initAll(cliParser);
 			if (!doRun) {
 				System.exit(0);
 			}
@@ -219,7 +212,20 @@ public abstract class ApplicationMaster {
 		conf = new YarnConfiguration();
 	}
 
-	protected abstract boolean init(CommandLine commandLine);
+	public Options setupOptionsAll() {
+		options = new Options();
+		setupDefaultOptions(options);
+		setupOptions(options);
+		return options;
+
+	}
+
+	private Options setupDefaultOptions(Options opts) {
+		opts.addOption("jar", true, "Jar file containing the Workers");
+		opts.addOption("debug", false, "Dump out debug information");
+		opts.addOption("help", false, "Print usage");
+		return opts;
+	}
 
 	/**
 	 * Parse command line options
@@ -230,20 +236,10 @@ public abstract class ApplicationMaster {
 	 * @throws ParseException
 	 * @throws IOException
 	 */
-	public boolean init(String[] args) throws ParseException, IOException {
-		Options opts = getOptions();
-		opts.addOption("jar", true, "Jar file containing the Workers");
-		opts.addOption("debug", false, "Dump out debug information");
-		opts.addOption("help", false, "Print usage");
-		CommandLine cliParser = new GnuParser().parse(opts, args);
-
-		if (args.length == 0) {
-			printUsage(opts);
-			throw new IllegalArgumentException("No args specified for application master to initialize");
-		}
+	public boolean initAll(CommandLine cliParser) throws ParseException, IOException {
 
 		if (cliParser.hasOption("help")) {
-			printUsage(opts);
+			printUsage(getOptions());
 			return false;
 		}
 
@@ -302,14 +298,6 @@ public abstract class ApplicationMaster {
 				+ ", clustertimestamp=" + appAttemptID.getApplicationId().getClusterTimestamp() + ", attemptId="
 				+ appAttemptID.getAttemptId());
 
-		containerMemory = Integer.parseInt(cliParser.getOptionValue("container_memory", "100"));
-		containerVirtualCores = Integer.parseInt(cliParser.getOptionValue("container_vcores", "1"));
-		numTotalContainers = Integer.parseInt(cliParser.getOptionValue("num_containers", "1"));
-		if (numTotalContainers == 0) {
-			throw new IllegalArgumentException("Cannot run Engima containers with zero containers");
-		}
-		requestPriority = Integer.parseInt(cliParser.getOptionValue("priority", "0"));
-
 		timeLinePublisher = new TimeLinePublisher(conf);
 		return init(cliParser);
 	}
@@ -364,52 +352,63 @@ public abstract class ApplicationMaster {
 		int maxVCores = response.getMaximumResourceCapability().getVirtualCores();
 		LOG.info("Max vcores capabililty of resources in this cluster " + maxVCores);
 
-		// A resource ask cannot exceed the max.
-		if (containerMemory > maxMem) {
-			LOG.info("Container memory specified above max threshold of cluster." + " Using max value." + ", specified="
-					+ containerMemory + ", max=" + maxMem);
-			containerMemory = maxMem;
-		}
-
-		if (containerVirtualCores > maxVCores) {
-			LOG.info("Container virtual cores specified above max threshold of cluster." + " Using max value."
-					+ ", specified=" + containerVirtualCores + ", max=" + maxVCores);
-			containerVirtualCores = maxVCores;
-		}
-
-		List<Container> previousAMRunningContainers = response.getContainersFromPreviousAttempts();
-		LOG.info(appAttemptID + " received " + previousAMRunningContainers.size()
-				+ " previous attempts' running containers on AM registration.");
-		numAllocatedContainers.addAndGet(previousAMRunningContainers.size());
-
-		int numTotalContainersToRequest = numTotalContainers - previousAMRunningContainers.size();
-
-		// Setup ask for containers from RM
-		// Send request for containers to RM
-		// Until we get our fully allocated quota, we keep on polling RM for
-		// containers
-		// Keep looping until all the containers are launched and shell script
-		// executed on them ( regardless of success/failure).
-		for (int i = 0; i < numTotalContainersToRequest; ++i) {
-			ContainerRequest containerAsk = setupContainerAskForRM();
-			amRMClient.addContainerRequest(containerAsk);
-		}
-		numRequestedContainers.set(numTotalContainers);
 		try {
 			timeLinePublisher.publishApplicationAttemptEvent(appAttemptID.toString(), DSEvent.DS_APP_ATTEMPT_END);
 		} catch (Exception e) {
 			LOG.error("App Attempt start event coud not be pulished for " + appAttemptID.toString(), e);
 		}
-		start();
+		registerPhases();
+		startFirstPhase();
 	}
 
-	protected abstract void start();
+	protected abstract void registerPhases();
+
+	protected void startFirstPhase() {
+		if (!pendingPhases.isEmpty()) {
+			currentPhase = pendingPhases.poll();
+			Thread phaseThread = new Thread(currentPhase);
+			phaseThreads.add(phaseThread);
+			phaseThread.start();
+		} else {
+			LOG.error("NO Phases Registered , aborting phase execution");
+			done = true;
+		}
+	}
+
+	public boolean hasCompleted() {
+		return completedPhases.size() == phaseList.size();
+	}
+
+	public boolean hasCompletedSuccessfully() {
+		return hasCompleted() && failedPhases.size() == 0;
+	}
 
 	@VisibleForTesting
 	protected boolean finish() {
+
 		// wait for completion.
-		while (!done && (numCompletedContainers.get() != numTotalContainers)) {
+		while (!done && !hasCompleted()) {
 			try {
+				if (currentPhase.getPhaseStatus() != PhaseStatus.RUNNING) {
+					if (currentPhase.getPhaseStatus() == PhaseStatus.SUCCESSED) {
+						completedPhases.add(currentPhase);
+						// check to see if any pending phases start them
+						if (pendingPhases.isEmpty()) {
+							done = true;
+						}
+						if (!pendingPhases.isEmpty()) {
+							currentPhase = pendingPhases.poll();
+							Thread phaseThread = new Thread(currentPhase);
+							phaseThreads.add(phaseThread);
+							phaseThread.start();
+						}
+					}
+					// phase failed
+					else {
+						failedPhases.add(currentPhase);
+						done = true;
+					}
+				}
 				Thread.sleep(200);
 			} catch (InterruptedException ex) {
 			}
@@ -418,9 +417,9 @@ public abstract class ApplicationMaster {
 		// Join all launched threads
 		// needed for when we time out
 		// and we need to release containers
-		for (Thread launchThread : launchThreads) {
+		for (Thread phaseThread : phaseThreads) {
 			try {
-				launchThread.join(10000);
+				phaseThread.join(10000);
 			} catch (InterruptedException e) {
 				LOG.info("Exception thrown in thread join: " + e.getMessage());
 				e.printStackTrace();
@@ -438,13 +437,12 @@ public abstract class ApplicationMaster {
 		FinalApplicationStatus appStatus;
 		String appMessage = null;
 		boolean success = true;
-		if (numFailedContainers.get() == 0 && numCompletedContainers.get() == numTotalContainers) {
+		if (hasCompletedSuccessfully()) {
 			appStatus = FinalApplicationStatus.SUCCEEDED;
 		} else {
 			appStatus = FinalApplicationStatus.FAILED;
-			appMessage = "Diagnostics." + ", total=" + numTotalContainers + ", completed="
-					+ numCompletedContainers.get() + ", allocated=" + numAllocatedContainers.get() + ", failed="
-					+ numFailedContainers.get();
+			appMessage = "Diagnostics." + ", total Phases=" + phaseList.size() + ", completed=" + completedPhases.size()
+					+ ", failed=" + failedPhases.size();
 			success = false;
 		}
 		try {
@@ -458,6 +456,10 @@ public abstract class ApplicationMaster {
 		amRMClient.stop();
 
 		return success;
+	}
+
+	public float getProgress() {
+		return completedPhases.size() / phaseList.size();
 	}
 
 	private void extractTokens() {
@@ -506,19 +508,19 @@ public abstract class ApplicationMaster {
 
 	}
 
-	/**
-	 * Setup the request that will be sent to the RM for the container ask.
-	 *
-	 * @return the setup ResourceRequest to be sent to RM
-	 */
-	public ContainerRequest setupContainerAskForRM() {
+	public static class AppMasterClassGetter extends SecurityManager {
+		public Class[] getCurrentClass() {
+			return getClassContext(); // can be .getSimpleName() to get
+										// the class name without the package
+		}
+	}
 
-		Priority pri = Priority.newInstance(requestPriority);
-		// Set up resource type requirements
-		Resource capability = Resource.newInstance(containerMemory, containerVirtualCores);
-		ContainerRequest request = new ContainerRequest(capability, null, null, pri);
-		LOG.info("Requested container ask: " + request.toString());
-		return request;
+	public Options getOptions() {
+		return options;
+	}
+
+	public void setOptions(Options options) {
+		this.options = options;
 	}
 
 	public ApplicationAttemptId getAppAttemptID() {
@@ -529,52 +531,12 @@ public abstract class ApplicationMaster {
 		this.appAttemptID = appAttemptID;
 	}
 
-	public int getNumTotalContainers() {
-		return numTotalContainers;
-	}
-
-	public void setNumTotalContainers(int numTotalContainers) {
-		this.numTotalContainers = numTotalContainers;
-	}
-
-	public AtomicInteger getNumCompletedContainers() {
-		return numCompletedContainers;
-	}
-
-	public void setNumCompletedContainers(AtomicInteger numCompletedContainers) {
-		this.numCompletedContainers = numCompletedContainers;
-	}
-
-	public AtomicInteger getNumAllocatedContainers() {
-		return numAllocatedContainers;
-	}
-
-	public void setNumAllocatedContainers(AtomicInteger numAllocatedContainers) {
-		this.numAllocatedContainers = numAllocatedContainers;
-	}
-
 	public ByteBuffer getAllTokens() {
 		return allTokens;
 	}
 
 	public void setAllTokens(ByteBuffer allTokens) {
 		this.allTokens = allTokens;
-	}
-
-	public AtomicInteger getNumFailedContainers() {
-		return numFailedContainers;
-	}
-
-	public void setNumFailedContainers(AtomicInteger numFailedContainers) {
-		this.numFailedContainers = numFailedContainers;
-	}
-
-	public AtomicInteger getNumRequestedContainers() {
-		return numRequestedContainers;
-	}
-
-	public void setNumRequestedContainers(AtomicInteger numRequestedContainers) {
-		this.numRequestedContainers = numRequestedContainers;
 	}
 
 	public TimeLinePublisher getTimeLinePublisher() {
@@ -607,14 +569,6 @@ public abstract class ApplicationMaster {
 
 	public void setDone(boolean done) {
 		this.done = done;
-	}
-
-	public List<Thread> getLaunchThreads() {
-		return launchThreads;
-	}
-
-	public void setLaunchThreads(List<Thread> launchThreads) {
-		this.launchThreads = launchThreads;
 	}
 
 	public AMRMClientAsync getAmRMClient() {

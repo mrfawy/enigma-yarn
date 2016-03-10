@@ -1,18 +1,23 @@
 package com.tito.enigma.yarn.phase;
 
+import java.util.List;
+
 import com.tito.enigma.yarn.applicationmaster.ApplicationMaster;
 import com.tito.enigma.yarn.task.Task;
 
 public class FixedTasksPhaseManager extends PhaseManager {
 
-	public FixedTasksPhaseManager(ApplicationMaster appMaster, Phase phase) {
-		super(appMaster, phase);
+	private List<Task> taskList;
+
+	public FixedTasksPhaseManager(ApplicationMaster appMaster, List<Task> taskList) {
+		super(appMaster);
+		this.taskList = taskList;
 
 	}
 
 	@Override
 	public void defineTasks() {
-		for (Task t : getPhase().getTaskList()) {
+		for (Task t : taskList) {
 			RegisterTask(t);
 		}
 
