@@ -71,11 +71,24 @@ import org.apache.hadoop.yarn.util.Records;
 import org.apache.log4j.LogManager;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.tito.enigma.yarn.phase.Phase;
+import com.tito.enigma.yarn.phase.PhaseManager;
 import com.tito.enigma.yarn.util.YarnConstants;
 
-public class ApplicationMaster {
+public abstract class ApplicationMaster {
 
 	private static final Log LOG = LogFactory.getLog(ApplicationMaster.class);
+
+	List<Phase> phaseList = new ArrayList<>();
+	Phase currentPhase;
+
+	Phase getCurrentPhase() {
+		return currentPhase;
+	}
+
+	PhaseManager getCurrentPhaseManager() {
+		return currentPhase.getPhaseManager();
+	}
 
 	@VisibleForTesting
 	@Private
@@ -134,10 +147,20 @@ public class ApplicationMaster {
 
 	private TimeLinePublisher timeLinePublisher;
 
+	public PhaseManager getPhaseManager() {
+		return null;
+	}
+
+	public abstract Options getOptions();
+
+	public static ApplicationMaster getInstance() {
+		return null;
+	}
+
 	public static void main(String[] args) {
 		boolean result = false;
 		try {
-			ApplicationMaster appMaster = new ApplicationMaster();
+			ApplicationMaster appMaster = getInstance();
 			LOG.info("Initializing ApplicationMaster");
 			boolean doRun = appMaster.init(args);
 			if (!doRun) {
@@ -192,6 +215,8 @@ public class ApplicationMaster {
 		conf = new YarnConfiguration();
 	}
 
+	protected abstract boolean init(CommandLine commandLine);
+
 	/**
 	 * Parse command line options
 	 *
@@ -202,7 +227,7 @@ public class ApplicationMaster {
 	 * @throws IOException
 	 */
 	public boolean init(String[] args) throws ParseException, IOException {
-		Options opts = new Options();
+		Options opts = getOptions();
 		opts.addOption("jar", true, "Jar file containing the Workers");
 		opts.addOption("debug", false, "Dump out debug information");
 		opts.addOption("help", false, "Print usage");
@@ -282,7 +307,7 @@ public class ApplicationMaster {
 		requestPriority = Integer.parseInt(cliParser.getOptionValue("priority", "0"));
 
 		timeLinePublisher = new TimeLinePublisher(conf);
-		return true;
+		return init(cliParser);
 	}
 
 	/**
@@ -371,7 +396,10 @@ public class ApplicationMaster {
 		} catch (Exception e) {
 			LOG.error("App Attempt start event coud not be pulished for " + appAttemptID.toString(), e);
 		}
+		start();
 	}
+
+	protected abstract void start();
 
 	@VisibleForTesting
 	protected boolean finish() {
@@ -453,7 +481,7 @@ public class ApplicationMaster {
 
 	}
 
-	public LocalResource createAppMasterJar() {
+	public LocalResource getAppJarResource() {
 		LocalResource appMasterJar = Records.newRecord(LocalResource.class);
 		try {
 			if (!jarPath.isEmpty()) {

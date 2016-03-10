@@ -35,17 +35,14 @@ public class RMCallbackHandler implements AMRMClientAsync.CallbackHandler {
 			int exitStatus = containerStatus.getExitStatus();
 			if (0 != exitStatus) {
 				// container failed
-				if (ContainerExitStatus.ABORTED != exitStatus) {
-					// shell script failed
-					// counts as completed
-					applicationMaster.getNumCompletedContainers().incrementAndGet();
-					applicationMaster.getNumFailedContainers().incrementAndGet();
+				if (ContainerExitStatus.ABORTED != exitStatus) {					
+					applicationMaster.getCurrentPhaseManager().onContainerFailed(containerStatus);
+					
 				} else {
 					// container was killed by framework, possibly preempted
 					// we should re-try as the container was lost for some
 					// reason
-					applicationMaster.numAllocatedContainers.decrementAndGet();
-					applicationMaster.numRequestedContainers.decrementAndGet();
+					applicationMaster.getCurrentPhaseManager().onContainerAborted(containerStatus);
 					// we do not need to release the container as it would
 					// be done
 					// by the RM
@@ -53,7 +50,7 @@ public class RMCallbackHandler implements AMRMClientAsync.CallbackHandler {
 			} else {
 				// nothing to do
 				// container completed successfully
-				applicationMaster.getNumCompletedContainers().incrementAndGet();
+				applicationMaster.getCurrentPhaseManager().onContainerCompleted(containerStatus);				
 				LOG.info("Container completed successfully." + ", containerId=" + containerStatus.getContainerId());
 			}
 			try {
@@ -93,15 +90,7 @@ public class RMCallbackHandler implements AMRMClientAsync.CallbackHandler {
 							+ ", containerResourceVirtualCores" + allocatedContainer.getResource().getVirtualCores()
 							+ ", containerToken" + allocatedContainer.getContainerToken().getIdentifier().toString());
 
-			LaunchContainerRunnable runnableLaunchContainer = new LaunchContainerRunnable(allocatedContainer,
-					applicationMaster);
-			Thread launchThread = new Thread(runnableLaunchContainer);
-
-			// launch and start the container on a separate thread to keep
-			// the main thread unblocked
-			// as all containers may not be allocated at one go.
-			applicationMaster.getLaunchThreads().add(launchThread);
-			launchThread.start();
+			applicationMaster.getCurrentPhaseManager().onContainersAllocated(allocatedContainer);
 		}
 	}
 
