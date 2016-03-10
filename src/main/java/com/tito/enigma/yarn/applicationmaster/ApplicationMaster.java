@@ -142,12 +142,17 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 	private ByteBuffer allTokens;
 
 	private TimeLinePublisher timeLinePublisher;
+	
+	public static Options getMainClassOption(){
+		Options ops = new Options();
+		ops.addOption("AppMasterClass", true, "Application Master Class");
+		return ops;
+	}
 
 	public static void main(String[] args) {
 		boolean result = false;
 		try {
-			Options ops = new Options();
-			ops.addOption("AppMasterClass", true, "Application Master Class");
+			Options ops =getMainClassOption();
 			CommandLine cliParser1 = new GnuParser().parse(ops, args);
 			if (!cliParser1.hasOption("AppMasterClass")) {
 				throw new RuntimeException("AppMasterClass is not specified failed to load Application Master");
@@ -213,7 +218,7 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 	}
 
 	public Options setupOptionsAll() {
-		options = new Options();
+		options = getMainClassOption();
 		setupDefaultOptions(options);
 		setupOptions(options);
 		return options;
