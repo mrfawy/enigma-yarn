@@ -7,6 +7,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.tito.enigma.config.ExtendedGnuParser;
+
 public abstract class Tasklet implements TaskletIF {
 	private static final Log LOG = LogFactory.getLog(Tasklet.class);
 	
@@ -43,7 +45,7 @@ public abstract class Tasklet implements TaskletIF {
 		boolean result = false;
 		try {				
 			Options ops = getMainClassOption();			
-			CommandLine cliParser1 = new GnuParser().parse(ops, args);
+			CommandLine cliParser1 = new ExtendedGnuParser(true).parse(ops, args);
 			if (!cliParser1.hasOption("TaskletClass")) {
 				throw new RuntimeException("TaskletClass is not specified failed to load Tasklet");
 			}

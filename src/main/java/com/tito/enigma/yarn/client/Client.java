@@ -47,6 +47,7 @@ public class Client {
 	private YarnClient yarnClient;
 
 	private String jarPath;
+	private String appMasterClass;
 	// Queue for App master
 	private String amQueue = "";
 
@@ -99,6 +100,8 @@ public class Client {
 		yarnClient = YarnClient.createYarnClient();
 		yarnClient.init(conf);
 		opts = new Options();
+		
+		opts.addOption("appMasterClass", true, "Applicaiton Master class name");
 		opts.addOption("queue", true, "RM Queue in which this application is to be submitted");
 		opts.addOption("timeout", true, "Application timeout in milliseconds");
 		opts.addOption("jar", true, "Jar file containing the application master");
@@ -135,6 +138,18 @@ public class Client {
 		if (cliParser.hasOption("debug")) {
 			debugFlag = true;
 
+		}
+		
+		if(!cliParser.hasOption("appMasterClass")){
+			throw new IllegalArgumentException("Missing ApplicationMaster class ");
+		}else{			
+			try {							
+				appMasterClass=cliParser.getOptionValue("appMasterClass");
+				Class.forName(appMasterClass);
+			} catch (ClassNotFoundException e) {		
+				LOG.error("Class not found :"+appMasterClass);
+				throw new IllegalArgumentException("Class not found :"+appMasterClass);
+			}
 		}
 
 		if (cliParser.hasOption("keep_containers_across_application_attempts")) {
@@ -226,7 +241,7 @@ public class Client {
 		appContext.setApplicationName(YarnConstants.APP_NAME);
 
 		ContainerLaunchContext amContainer = ApplicationMasterLaunchContextFactory.createAppMasterLaunchContext(conf,
-				appId.toString(), jarPath);
+				appId.toString(), jarPath,appMasterClass);
 
 		// Set up resource type requirements
 		Resource capability = Resource.newInstance(YarnConstants.APP_MASTER_MEMORY, YarnConstants.APP_MASTER_VCORES);

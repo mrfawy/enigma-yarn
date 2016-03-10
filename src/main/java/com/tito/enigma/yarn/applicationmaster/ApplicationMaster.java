@@ -68,6 +68,7 @@ import org.apache.hadoop.yarn.util.Records;
 import org.apache.log4j.LogManager;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.tito.enigma.config.ExtendedGnuParser;
 import com.tito.enigma.yarn.phase.Phase;
 import com.tito.enigma.yarn.phase.PhaseManager;
 import com.tito.enigma.yarn.phase.PhaseStatus;
@@ -145,20 +146,21 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 	
 	public static Options getMainClassOption(){
 		Options ops = new Options();
-		ops.addOption("AppMasterClass", true, "Application Master Class");
+		ops.addOption("appMasterClass", true, "Application Master Class");
 		return ops;
 	}
+	
 
 	public static void main(String[] args) {
 		boolean result = false;
 		try {
 			Options ops =getMainClassOption();
-			CommandLine cliParser1 = new GnuParser().parse(ops, args);
-			if (!cliParser1.hasOption("AppMasterClass")) {
+			CommandLine cliParser1 = new ExtendedGnuParser(true).parse(ops, args);
+			if (!cliParser1.hasOption("appMasterClass")) {
 				throw new RuntimeException("AppMasterClass is not specified failed to load Application Master");
 			}
 
-			ApplicationMaster appMaster = (ApplicationMaster) Class.forName(cliParser1.getOptionValue("AppMasterClass"))
+			ApplicationMaster appMaster = (ApplicationMaster) Class.forName(cliParser1.getOptionValue("appMasterClass"))
 					.newInstance();
 
 			LOG.info("Initializing ApplicationMaster");
@@ -513,13 +515,7 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 
 	}
 
-	public static class AppMasterClassGetter extends SecurityManager {
-		public Class[] getCurrentClass() {
-			return getClassContext(); // can be .getSimpleName() to get
-										// the class name without the package
-		}
-	}
-
+	
 	public Options getOptions() {
 		return options;
 	}

@@ -7,10 +7,10 @@ public class ConfigLoader {
 	}
 
 	public static int getContainerMemory() {
-		return 0;
+		return 512;
 	}
 
 	public static int getContainerVCores() {
-		return 0;
+		return 1;
 	}
 }

@@ -26,7 +26,7 @@ public class ApplicationMasterLaunchContextFactory {
 	private static final Log LOG = LogFactory.getLog(ApplicationMasterLaunchContextFactory.class);
 
 	public static ContainerLaunchContext createAppMasterLaunchContext(Configuration conf, String appId,
-			String engimaJarPath) {
+			String engimaJarPath,String applicationMasterClassName) {
 
 		Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
 
@@ -74,7 +74,8 @@ public class ApplicationMasterLaunchContextFactory {
 			// Set Xmx based on am memory size
 			vargs.add("-Xmx" + YarnConstants.APP_MASTER_MEMORY + "m");
 			// Set class name
-			vargs.add(YarnConstants.APP_MASTER_CLASS);
+			vargs.add(applicationMasterClassName);
+			vargs.add("-appMasterClass "+applicationMasterClassName);
 			vargs.add("-jar "+engimaJarPath);
 			vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/AppMaster.stdout");
 			vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/AppMaster.stderr");

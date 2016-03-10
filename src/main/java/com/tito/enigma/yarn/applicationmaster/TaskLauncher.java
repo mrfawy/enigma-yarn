@@ -84,7 +84,8 @@ public class TaskLauncher implements Runnable {
 		// Set Xmx based on container memory size
 		vargs.add("-Xmx" + ConfigLoader.getContainerMemory() + "m");
 		// Set class name
-		vargs.add(task.getTaskContext().getClass().getCanonicalName());
+		vargs.add(task.getTaskContext().getTaskletClass().getCanonicalName());
+		vargs.add("-TaskletClass "+task.getTaskContext().getTaskletClass().getCanonicalName());
 		if (task.getTaskContext().getArgs() != null) {
 			for (String arg : task.getTaskContext().getArgs().keySet()) {
 				vargs.add(String.format("--%s %s", arg, task.getTaskContext().getArgs().get(arg)));
