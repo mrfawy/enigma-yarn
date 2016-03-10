@@ -394,13 +394,17 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 	protected boolean finish() {
 
 		// wait for completion.
+		LOG.info("(!done && !hasCompleted()"+(!done && !hasCompleted()));
 		while (!done && !hasCompleted()) {
 			try {
 				if (currentPhase.getPhaseStatus() != PhaseStatus.RUNNING) {
+					LOG.info("currentPhase.getPhaseStatus()"+currentPhase.getPhaseStatus());
 					if (currentPhase.getPhaseStatus() == PhaseStatus.SUCCESSED) {
+						LOG.info("Phase Completed successfully : "+currentPhase.getId());
 						completedPhases.add(currentPhase);
 						// check to see if any pending phases start them
 						if (pendingPhases.isEmpty()) {
+							LOG.info("No More Phases remaining");
 							done = true;
 						}
 						if (!pendingPhases.isEmpty()) {
@@ -444,6 +448,10 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 		FinalApplicationStatus appStatus;
 		String appMessage = null;
 		boolean success = true;
+		LOG.info("hasCompletedSuccessfully():"+hasCompletedSuccessfully());
+		LOG.info("completedPhases.size():"+completedPhases.size());
+		LOG.info("phaseList.size():"+phaseList.size());
+		LOG.info("+failedPhases.size():"+failedPhases.size());
 		if (hasCompletedSuccessfully()) {
 			appStatus = FinalApplicationStatus.SUCCEEDED;
 		} else {

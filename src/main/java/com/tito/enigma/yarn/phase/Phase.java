@@ -1,16 +1,25 @@
 package com.tito.enigma.yarn.phase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class Phase implements Runnable {
+
+	private static final Log LOG = LogFactory.getLog(Phase.class);
 
 	private String id;
 	private PhaseManager phaseManager;
 	private PhaseStatus phaseStatus;
 
+	public Phase() {
+		phaseStatus = PhaseStatus.PENDING;
+	}
+
 	@Override
 	public void run() {
+		setPhaseStatus(PhaseStatus.RUNNING);
 		phaseManager.start();
-		phaseStatus=PhaseStatus.RUNNING;
-		while(!phaseManager.hasCompleted()){
+		while (!phaseManager.hasCompleted()) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -18,12 +27,15 @@ public class Phase implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		if(phaseManager.hasCompletedSuccessfully()){
-			phaseStatus=PhaseStatus.SUCCESSED;
+
+		if (phaseManager.hasCompletedSuccessfully()) {
+			LOG.info("Phase Manager Completed Successfully");
+			setPhaseStatus(PhaseStatus.SUCCESSED);
+		} else {
+			LOG.info("Phase Manager Failed");
+			setPhaseStatus(PhaseStatus.FAILED);
 		}
-		else{
-			phaseStatus=PhaseStatus.FAILED;
-		}
+
 	}
 
 	public Phase(String id, PhaseManager phaseManager) {
@@ -49,11 +61,11 @@ public class Phase implements Runnable {
 		this.phaseManager = phaseManager;
 	}
 
-	public PhaseStatus getPhaseStatus() {
+	public synchronized PhaseStatus getPhaseStatus() {
 		return phaseStatus;
 	}
 
-	public void setPhaseStatus(PhaseStatus phaseStatus) {
+	public synchronized void setPhaseStatus(PhaseStatus phaseStatus) {
 		this.phaseStatus = phaseStatus;
 	}
 

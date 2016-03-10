@@ -177,6 +177,7 @@ public abstract class PhaseManager {
 		Task t = containerTaskMatrix.get(containerId);
 		t.setAssignedContainerId(null);
 		t.setStatus(TaskStatus.SUCCESSED);
+		LOG.info("Task completed Successfully:"+t.getId());
 		completedTasks.add(t);
 		numCompletedContainers.incrementAndGet();
 	}
