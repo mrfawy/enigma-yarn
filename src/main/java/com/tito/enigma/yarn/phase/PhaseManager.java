@@ -31,7 +31,7 @@ import com.tito.enigma.yarn.task.TaskStatus;
 
 /**
  * Phase Managers handles running list of tasks to run in parallel until
- * completion
+ * completion or if restart count is maxed
  * 
  * @author mabdelra
  *
@@ -45,7 +45,7 @@ public abstract class PhaseManager {
 	private Phase phase;
 
 	protected Queue<Task> pendingTasks = new LinkedList<>();
-	protected Queue<Task> runningTasks = new LinkedList<>();
+	protected Queue<Task> failedTasks = new LinkedList<>();
 	protected Queue<Task> completedTasks = new LinkedList<>();
 
 	protected Map<ContainerId, Task> containerTaskMatrix = new HashMap<>();
@@ -93,6 +93,7 @@ public abstract class PhaseManager {
 	}
 
 	public void start() {
+		defineTasks();
 		if (!checkDependencies()) {
 			throw new RuntimeException("Dependencies Check is not met , aborting phase");
 		}
@@ -114,7 +115,7 @@ public abstract class PhaseManager {
 
 	}
 
-	public void onContainersAllocated(Container allocatedContainer) {
+	public void onContainerAllocated(Container allocatedContainer) {
 		LOG.info("Processing Allocated Containers :" + allocatedContainer.getId());
 		numAllocatedContainers.incrementAndGet();
 
@@ -122,7 +123,6 @@ public abstract class PhaseManager {
 			Task task = pendingTasks.poll();
 			task.setAssignedContainerId(allocatedContainer.getId());
 			task.setStatus(TaskStatus.RUNNING);
-			runningTasks.add(task);
 			containerTaskMatrix.put(allocatedContainer.getId(), task);
 			TaskLauncher runnableLaunchContainer = new TaskLauncher(allocatedContainer, this, task);
 			Thread launchThread = new Thread(runnableLaunchContainer);
@@ -133,16 +133,49 @@ public abstract class PhaseManager {
 	}
 
 	public void onContainerAborted(ContainerStatus containerStatus) {
+		ContainerId containerId = containerStatus.getContainerId();
+		Task t = containerTaskMatrix.get(containerId);
+		t.setAssignedContainerId(null);
+		t.setStatus(TaskStatus.FAILED);
+		// schedule task for restart
+		if (t.isRestartable() && t.getRestartCount() < t.getRestartMax()) {
+			t.setStatus(TaskStatus.PENDING);
+			t.setRestartCount(t.getRestartCount() + 1);
+			pendingTasks.add(t);
+			// request new container for it
+			sendRequestForContainers(1);
+		}
+		// task failure
+		else {
+			failedTasks.add(t);
+			completedTasks.add(t);
+		}
+
+		// clear matrix record
+		containerTaskMatrix.remove(containerId);
+
 		numAllocatedContainers.decrementAndGet();
 		numRequestedContainers.decrementAndGet();
 	}
 
 	public void onContainerFailed(ContainerStatus containerStatus) {
+		ContainerId containerId = containerStatus.getContainerId();
+		Task t = containerTaskMatrix.get(containerId);
+		t.setAssignedContainerId(null);
+		t.setStatus(TaskStatus.FAILED);
+		failedTasks.add(t);
+		completedTasks.add(t);
+		containerTaskMatrix.remove(containerId);
 		numCompletedContainers.incrementAndGet();
 		numFailedContainers.incrementAndGet();
 	}
 
 	public void onContainerCompleted(ContainerStatus containerStatus) {
+		ContainerId containerId = containerStatus.getContainerId();
+		Task t = containerTaskMatrix.get(containerId);
+		t.setAssignedContainerId(null);
+		t.setStatus(TaskStatus.SUCCESSED);
+		completedTasks.add(t);
 		numCompletedContainers.incrementAndGet();
 	}
 
@@ -150,8 +183,13 @@ public abstract class PhaseManager {
 
 	public abstract void stop();
 
+	public abstract void defineTasks();
+
 	public boolean hasCompleted() {
 		return completedTasks.size() == phase.getTaskList().size();
+	}
+	public boolean hasCompletedSuccessfully() {
+		return hasCompleted()&&failedTasks.size()==0;
 	}
 
 	public AtomicInteger getNumRequestedContainers() {
@@ -185,5 +223,14 @@ public abstract class PhaseManager {
 	public void setNumFailedContainers(AtomicInteger numFailedContainers) {
 		this.numFailedContainers = numFailedContainers;
 	}
+
+	public Phase getPhase() {
+		return phase;
+	}
+
+	public void setPhase(Phase phase) {
+		this.phase = phase;
+	}
 	
+
 }

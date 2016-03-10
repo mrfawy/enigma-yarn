@@ -90,7 +90,7 @@ public class RMCallbackHandler implements AMRMClientAsync.CallbackHandler {
 							+ ", containerResourceVirtualCores" + allocatedContainer.getResource().getVirtualCores()
 							+ ", containerToken" + allocatedContainer.getContainerToken().getIdentifier().toString());
 
-			applicationMaster.getCurrentPhaseManager().onContainersAllocated(allocatedContainer);
+			applicationMaster.getCurrentPhaseManager().onContainerAllocated(allocatedContainer);
 		}
 	}
 

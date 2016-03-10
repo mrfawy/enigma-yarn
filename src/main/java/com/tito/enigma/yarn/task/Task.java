@@ -2,7 +2,7 @@ package com.tito.enigma.yarn.task;
 
 import org.apache.hadoop.yarn.api.records.ContainerId;
 
-public abstract class Task {
+public class Task {
 
 	private String id;
 	private TaskStatus status;
@@ -11,6 +11,12 @@ public abstract class Task {
 	private boolean restartable;
 	private int restartMax;
 	private int restartCount;
+
+	public Task(String id, TaskContext taskContext) {
+		super();
+		this.id = id;
+		this.taskContext = taskContext;
+	}
 
 	public String getId() {
 		return id;
@@ -27,8 +33,6 @@ public abstract class Task {
 	public void setStatus(TaskStatus status) {
 		this.status = status;
 	}
-
-
 
 	public ContainerId getAssignedContainerId() {
 		return assignedContainerId;
@@ -69,7 +73,5 @@ public abstract class Task {
 	public void setRestartCount(int restartCount) {
 		this.restartCount = restartCount;
 	}
-	
-	
 
 }

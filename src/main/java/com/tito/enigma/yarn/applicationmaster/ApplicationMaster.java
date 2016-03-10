@@ -81,6 +81,10 @@ public abstract class ApplicationMaster {
 
 	List<Phase> phaseList = new ArrayList<>();
 	Phase currentPhase;
+	
+	public void registerPhase(Phase phase){
+		phaseList.add(phase);
+	}
 
 	Phase getCurrentPhase() {
 		return currentPhase;

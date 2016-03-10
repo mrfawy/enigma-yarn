@@ -4,16 +4,26 @@ import java.util.Map;
 
 public class TaskContext {
 	
-	private String className;
+	private Class taskClass;
 	private Map<String, String> args;
 	private Map<String, String> envVariables;
 	private int maxMemory; // optional to set assigned container memory, use it for larger tasks
-	public String getClassName() {
-		return className;
+	
+	public TaskContext() {
+		// TODO Auto-generated constructor stub
 	}
 
-	public void setClassName(String className) {
-		this.className = className;
+	public Class getTaskClass() {
+		return taskClass;
+	}
+
+	public TaskContext(Class taskClass) {
+		super();
+		this.taskClass = taskClass;
+	}
+
+	public void setTaskClass(Class taskClass) {
+		this.taskClass = taskClass;
 	}
 
 	public Map<String, String> getArgs() {
