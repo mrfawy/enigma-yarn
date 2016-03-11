@@ -12,26 +12,28 @@ import com.tito.enigma.yarn.phase.Phase;
 import com.tito.enigma.yarn.task.Task;
 import com.tito.enigma.yarn.task.TaskContext;
 
-public class HelloWorldAppMaster extends ApplicationMaster{
+public class HelloWorldAppMaster extends ApplicationMaster {
 
 	@Override
-	public boolean init(CommandLine commandLine) {		
+	public boolean init(CommandLine commandLine) {
 		return true;
 	}
 
 	@Override
-	public void setupOptions(Options opts) {		
-		
+	public void setupOptions(Options opts) {
+
 	}
 
 	@Override
 	protected void registerPhases() {
-		Task t = new Task("task1", new TaskContext(HelloWorldTasklet.class));
-		List<Task> fixedTasks = new ArrayList<>();
-		fixedTasks.add(t);
-		Phase phase1 = new Phase("phase 1", new FixedTasksPhaseManager(this, fixedTasks));
-		registerPhase(phase1);
-		
+		for (int i = 0; i < 10; i++) {
+			Task t = new Task("task" + i, new TaskContext(HelloWorldTasklet.class));
+			List<Task> fixedTasks = new ArrayList<>();
+			fixedTasks.add(t);
+			Phase phase1 = new Phase("phase 1", new FixedTasksPhaseManager(this, fixedTasks));
+			registerPhase(phase1);
+		}
+
 	}
 
 }
