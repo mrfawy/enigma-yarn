@@ -143,18 +143,17 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 	private ByteBuffer allTokens;
 
 	private TimeLinePublisher timeLinePublisher;
-	
-	public static Options getMainClassOption(){
+
+	public static Options getMainClassOption() {
 		Options ops = new Options();
 		ops.addOption("appMasterClass", true, "Application Master Class");
 		return ops;
 	}
-	
 
 	public static void main(String[] args) {
 		boolean result = false;
 		try {
-			Options ops =getMainClassOption();
+			Options ops = getMainClassOption();
 			CommandLine cliParser1 = new ExtendedGnuParser(true).parse(ops, args);
 			if (!cliParser1.hasOption("appMasterClass")) {
 				throw new RuntimeException("AppMasterClass is not specified failed to load Application Master");
@@ -365,22 +364,10 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 			LOG.error("App Attempt start event coud not be pulished for " + appAttemptID.toString(), e);
 		}
 		registerPhases();
-		startFirstPhase();
+
 	}
 
 	protected abstract void registerPhases();
-
-	protected void startFirstPhase() {
-		if (!pendingPhases.isEmpty()) {
-			currentPhase = pendingPhases.poll();
-			Thread phaseThread = new Thread(currentPhase);
-			phaseThreads.add(phaseThread);
-			phaseThread.start();
-		} else {
-			LOG.error("NO Phases Registered , aborting phase execution");
-			done = true;
-		}
-	}
 
 	public boolean hasCompleted() {
 		return completedPhases.size() == phaseList.size();
@@ -394,13 +381,28 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 	protected boolean finish() {
 
 		// wait for completion.
-		LOG.info("(!done && !hasCompleted()"+(!done && !hasCompleted()));
+		LOG.info("(!done " + (!done));
+		LOG.info("!hasCompleted()" + (!hasCompleted()));
 		while (!done && !hasCompleted()) {
 			try {
-				if (currentPhase.getPhaseStatus() != PhaseStatus.RUNNING) {
-					LOG.info("currentPhase.getPhaseStatus()"+currentPhase.getPhaseStatus());
-					if (currentPhase.getPhaseStatus() == PhaseStatus.SUCCESSED) {
-						LOG.info("Phase Completed successfully : "+currentPhase.getId());
+				if (currentPhase == null) {
+					if (!pendingPhases.isEmpty()) {						
+						currentPhase = pendingPhases.poll();
+						Thread phaseThread = new Thread(currentPhase);
+						phaseThreads.add(phaseThread);						
+						LOG.info("Starting First Phase:"+currentPhase.getId());
+						phaseThread.start();
+					} else {
+						LOG.error("NO Phases Registered , aborting phase execution");
+						done = true;
+					}
+					continue;
+				}
+				PhaseStatus currentPhaseStatus = currentPhase.getPhaseStatus();
+				if (currentPhaseStatus!=null&&currentPhaseStatus != PhaseStatus.RUNNING) {
+					LOG.info("currentPhase.getPhaseStatus()" + currentPhaseStatus);
+					if (currentPhaseStatus == PhaseStatus.SUCCESSED) {
+						LOG.info("Phase Completed successfully : " + currentPhase.getId());
 						completedPhases.add(currentPhase);
 						// check to see if any pending phases start them
 						if (pendingPhases.isEmpty()) {
@@ -420,7 +422,7 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 						done = true;
 					}
 				}
-				Thread.sleep(200);
+				Thread.sleep(300);
 			} catch (InterruptedException ex) {
 			}
 		}
@@ -448,10 +450,10 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 		FinalApplicationStatus appStatus;
 		String appMessage = null;
 		boolean success = true;
-		LOG.info("hasCompletedSuccessfully():"+hasCompletedSuccessfully());
-		LOG.info("completedPhases.size():"+completedPhases.size());
-		LOG.info("phaseList.size():"+phaseList.size());
-		LOG.info("+failedPhases.size():"+failedPhases.size());
+		LOG.info("hasCompletedSuccessfully():" + hasCompletedSuccessfully());
+		LOG.info("completedPhases.size():" + completedPhases.size());
+		LOG.info("phaseList.size():" + phaseList.size());
+		LOG.info("+failedPhases.size():" + failedPhases.size());
 		if (hasCompletedSuccessfully()) {
 			appStatus = FinalApplicationStatus.SUCCEEDED;
 		} else {
@@ -523,7 +525,6 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 
 	}
 
-	
 	public Options getOptions() {
 		return options;
 	}
