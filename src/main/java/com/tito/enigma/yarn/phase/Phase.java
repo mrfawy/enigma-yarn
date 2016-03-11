@@ -11,7 +11,8 @@ public class Phase implements Runnable {
 	private PhaseManager phaseManager;
 	private PhaseStatus phaseStatus;
 
-	public Phase() {
+	public Phase(String id) {
+		this.id=id;
 		phaseStatus = PhaseStatus.PENDING;
 	}
 

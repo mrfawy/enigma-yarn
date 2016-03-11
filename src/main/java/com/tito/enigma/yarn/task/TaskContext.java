@@ -1,5 +1,6 @@
 package com.tito.enigma.yarn.task;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class TaskContext {
@@ -23,21 +24,29 @@ public class TaskContext {
 		this.taskletClass = taskletClass;
 	}
 
+	public void addArg(String key,String value){
+		getArgs().put(key, value);
+	}
 	public Map<String, String> getArgs() {
+		if(args==null){
+			args=new HashMap<>();
+		}
 		return args;
 	}
 
-	public void setArgs(Map<String, String> args) {
-		this.args = args;
-	}
+	
 
+	public void addEnvVariable(String key,String value){
+		getEnvVariables().put(key, value);
+	}
 	public Map<String, String> getEnvVariables() {
+		if(envVariables==null){
+			envVariables=new HashMap<>();
+		}
 		return envVariables;
 	}
 
-	public void setEnvVariables(Map<String, String> envVariables) {
-		this.envVariables = envVariables;
-	}
+	
 
 	public int getMaxMemory() {
 		return maxMemory;

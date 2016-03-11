@@ -1,4 +1,4 @@
-package com.tito.enigma.yarn.helloworld;
+package com.tito.enigma.yarn.app.helloworld;
 
 import java.util.ArrayList;
 import java.util.List;

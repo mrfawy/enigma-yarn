@@ -217,7 +217,8 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 		// Set up the configuration
 		conf = new YarnConfiguration();
 	}
-
+	
+	
 	public Options setupOptionsAll() {
 		options = getMainClassOption();
 		setupDefaultOptions(options);
@@ -225,6 +226,11 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 		return options;
 
 	}
+
+	
+
+	
+	public abstract void setupOptions(Options opts) ;
 
 	private Options setupDefaultOptions(Options opts) {
 		opts.addOption("jar", true, "Jar file containing the Workers");
@@ -324,7 +330,7 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 	 * @throws YarnException
 	 * @throws IOException
 	 */
-	@SuppressWarnings({ "unchecked" })
+	
 	public void run() throws YarnException, IOException {
 		LOG.info("Starting ApplicationMaster");
 		try {
@@ -498,8 +504,8 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 			}
 			allTokens = ByteBuffer.wrap(dob.getData(), 0, dob.getLength());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("extractTokens error={}",e);
+			
 		}
 
 	}
@@ -518,9 +524,8 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 			}
 			return appMasterJar;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			LOG.error("getAppJarResource error={}",e);
+					}
 		return null;
 
 	}

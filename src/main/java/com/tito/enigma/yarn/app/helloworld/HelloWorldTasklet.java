@@ -1,4 +1,4 @@
-package com.tito.enigma.yarn.helloworld;
+package com.tito.enigma.yarn.app.helloworld;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
