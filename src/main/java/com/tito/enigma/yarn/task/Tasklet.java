@@ -45,18 +45,19 @@ public abstract class Tasklet implements TaskletIF {
 		boolean result = false;
 		try {				
 			Options ops = getMainClassOption();			
-			CommandLine cliParser1 = new ExtendedGnuParser(true).parse(ops, args);
-			if (!cliParser1.hasOption("TaskletClass")) {
+			CommandLine cliParser = new ExtendedGnuParser(true).parse(ops, args);
+			if (!cliParser.hasOption("TaskletClass")) {
 				throw new RuntimeException("TaskletClass is not specified failed to load Tasklet");
 			}
 
-			Tasklet tasklet=(Tasklet) Class.forName(cliParser1.getOptionValue("TaskletClass"))
+			Tasklet tasklet=(Tasklet) Class.forName(cliParser.getOptionValue("TaskletClass"))
 					.newInstance();
 			
 			LOG.info("Initializing Tasklet");
 			try {
-				tasklet.setupOptionsAll();
-				CommandLine cliParser = new GnuParser().parse(tasklet.getOptions(), args);				
+				ops=tasklet.setupOptionsAll();	
+				//reparse args to assign options
+				cliParser = new ExtendedGnuParser(true).parse(ops, args);
 				boolean doRun = tasklet.init(cliParser);
 				if (!doRun) {
 					System.exit(0);

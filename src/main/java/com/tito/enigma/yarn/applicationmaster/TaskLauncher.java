@@ -33,15 +33,16 @@ public class TaskLauncher implements Runnable {
 	Container container;
 	PhaseManager phaseManager;
 	Task task;
+	
 
 	public TaskLauncher(Container container, PhaseManager phaseManager, Task task) {
 		super();
 		this.container = container;
 		this.phaseManager = phaseManager;
 		this.task = task;
+		
 	}
 
-	
 	public void run() {
 		LOG.info("Setting up container launch container for containerid=" + container.getId());
 
@@ -50,15 +51,14 @@ public class TaskLauncher implements Runnable {
 		phaseManager.getNmClientAsync().startContainerAsync(container, ctx);
 
 	}
-	
+
 	private ContainerLaunchContext createContainerLaunchContext() {
 		Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
 
 		LOG.info("Copy App Jar from local filesystem to the Task container");
-		
+
 		localResources.put(YarnConstants.APP_JAR, phaseManager.getAppJarResource());
 
-		
 		LOG.info("Set the environment for the Task container");
 		Map<String, String> env = new HashMap<String, String>();
 		StringBuilder classPathEnv = new StringBuilder(Environment.CLASSPATH.$$())
@@ -75,7 +75,6 @@ public class TaskLauncher implements Runnable {
 			}
 		}
 
-		
 		Vector<CharSequence> vargs = new Vector<CharSequence>(30);
 
 		// Set java executable command
@@ -85,17 +84,18 @@ public class TaskLauncher implements Runnable {
 		vargs.add("-Xmx" + ConfigLoader.getContainerMemory() + "m");
 		// Set class name
 		vargs.add(task.getTaskContext().getTaskletClass().getCanonicalName());
-		vargs.add("-TaskletClass "+task.getTaskContext().getTaskletClass().getCanonicalName());
+		vargs.add("-TaskletClass " + task.getTaskContext().getTaskletClass().getCanonicalName());
+
+		
 		if (task.getTaskContext().getArgs() != null) {
 			for (String arg : task.getTaskContext().getArgs().keySet()) {
-				vargs.add(String.format("--%s %s", arg, task.getTaskContext().getArgs().get(arg)));
+				vargs.add(String.format("-%s %s", arg, task.getTaskContext().getArgs().get(arg)));
 			}
 		}
 
-		vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/task_"+task.getId()+".stdout");
-		vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/task_"+task.getId()+".stderr");
+		vargs.add("1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/task_" + task.getId() + ".stdout");
+		vargs.add("2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/task_" + task.getId() + ".stderr");
 
-		
 		StringBuilder command = new StringBuilder();
 		for (CharSequence str : vargs) {
 			command.append(str).append(" ");

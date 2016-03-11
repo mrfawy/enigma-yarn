@@ -95,11 +95,17 @@ public abstract class PhaseManager {
 	}
 
 	public void start() {
+		LOG.info("PhaseManager Start");
 		defineTasks();
+		LOG.info("PhaseManager TaskListSize:"+taskList.size());
+		LOG.info("PhaseManager Pending:"+pendingTasks.size());
+		LOG.info("PhaseManager Failed:"+failedTasks.size());
+		LOG.info("PhaseManager Completed:"+completedTasks.size());
 		if (!checkDependencies()) {
 			throw new RuntimeException("Dependencies Check is not met , aborting phase");
 		}
 		int requiredCotainers = pendingTasks.size();
+		LOG.info("Required containers initially: " + requiredCotainers);
 		sendRequestForContainers(requiredCotainers);
 	}
 
@@ -174,12 +180,26 @@ public abstract class PhaseManager {
 
 	public void onContainerCompleted(ContainerStatus containerStatus) {
 		ContainerId containerId = containerStatus.getContainerId();
-		Task t = containerTaskMatrix.get(containerId);
-		t.setAssignedContainerId(null);
-		t.setStatus(TaskStatus.SUCCESSED);
-		LOG.info("Task completed Successfully:"+t.getId());
-		completedTasks.add(t);
-		numCompletedContainers.incrementAndGet();
+		//Task completed successfully
+		if(containerStatus.getExitStatus()==0){
+			Task t = containerTaskMatrix.get(containerId);
+			t.setAssignedContainerId(null);
+			t.setStatus(TaskStatus.SUCCESSED);
+			LOG.info("Task completed Successfully:"+t.getId());
+			completedTasks.add(t);
+			numCompletedContainers.incrementAndGet();
+		}
+		else{
+			Task t = containerTaskMatrix.get(containerId);
+			t.setAssignedContainerId(null);
+			t.setStatus(TaskStatus.FAILED);
+			failedTasks.add(t);
+			completedTasks.add(t);
+			containerTaskMatrix.remove(containerId);
+			numCompletedContainers.incrementAndGet();
+			numFailedContainers.incrementAndGet();
+		}
+		
 	}
 
 	public abstract boolean checkDependencies();

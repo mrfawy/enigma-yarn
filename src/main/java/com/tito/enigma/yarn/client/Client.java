@@ -1,11 +1,15 @@
 package com.tito.enigma.yarn.client;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
@@ -33,6 +37,8 @@ import org.apache.hadoop.yarn.client.api.YarnClientApplication;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 
+import com.tito.enigma.config.ExtendedGnuParser;
+import com.tito.enigma.yarn.applicationmaster.ApplicationMasterIF;
 import com.tito.enigma.yarn.util.TokenExtractor;
 import com.tito.enigma.yarn.util.YarnConstants;
 
@@ -65,6 +71,9 @@ public class Client {
 
 	// Command line options
 	private Options opts;
+	
+	private Map<String, String> appMasterArgs=new HashMap<>();
+	
 
 	public static void main(String[] args) {
 		boolean result = false;
@@ -104,8 +113,7 @@ public class Client {
 		opts.addOption("appMasterClass", true, "Applicaiton Master class name");
 		opts.addOption("queue", true, "RM Queue in which this application is to be submitted");
 		opts.addOption("timeout", true, "Application timeout in milliseconds");
-		opts.addOption("jar", true, "Jar file containing the application master");
-		opts.addOption("num_containers", true, "No. of containers on which the shell command needs to be executed");
+		opts.addOption("jar", true, "Jar file containing the application master");		
 		opts.addOption("debug", false, "Dump out debug information");
 		opts.addOption("help", false, "Print usage");
 
@@ -124,11 +132,36 @@ public class Client {
 	 */
 	public boolean init(String[] args) throws ParseException {
 
-		CommandLine cliParser = new GnuParser().parse(opts, args);
+		CommandLine cliParser = new ExtendedGnuParser(true).parse(opts, args);
+		
+		if(!cliParser.hasOption("appMasterClass")){
+			throw new IllegalArgumentException("Missing ApplicationMaster class ");
+		}else{			
+			try {							
+				appMasterClass=cliParser.getOptionValue("appMasterClass");
+				ApplicationMasterIF inspectedAppMaster= (ApplicationMasterIF) Class.forName(appMasterClass).newInstance();
+				Options inspectedAppMasterOpts=inspectedAppMaster.setupOptionsAll();
+				for(Object op:inspectedAppMasterOpts.getOptions()){					
+					opts.addOption((Option)op);
+				}
+				//reparse args to assign options 
+				cliParser = new ExtendedGnuParser(true).parse(opts, args);
+			} catch (ClassNotFoundException e) {		
+				LOG.error("Class not found :"+appMasterClass);
+				throw new IllegalArgumentException("Class not found :"+appMasterClass);
+			} catch (InstantiationException e) {
+				LOG.error("Application Master inspection Failed:{}",e);
+				throw new IllegalArgumentException("Application Master inspection Failed:"+appMasterClass);
+			} catch (IllegalAccessException e) {
+				LOG.error("Application Master inspection Failed:{}",e);
+				throw new IllegalArgumentException("Application Master inspection Failed:"+appMasterClass);
+			}
+		}
 
 		if (args.length == 0) {
 			throw new IllegalArgumentException("No args specified for client to initialize");
-		}
+		}		
+		
 
 		if (cliParser.hasOption("help")) {
 			printUsage();
@@ -140,17 +173,7 @@ public class Client {
 
 		}
 		
-		if(!cliParser.hasOption("appMasterClass")){
-			throw new IllegalArgumentException("Missing ApplicationMaster class ");
-		}else{			
-			try {							
-				appMasterClass=cliParser.getOptionValue("appMasterClass");
-				Class.forName(appMasterClass);
-			} catch (ClassNotFoundException e) {		
-				LOG.error("Class not found :"+appMasterClass);
-				throw new IllegalArgumentException("Class not found :"+appMasterClass);
-			}
-		}
+		
 
 		if (cliParser.hasOption("keep_containers_across_application_attempts")) {
 			LOG.info("keep_containers_across_application_attempts");
@@ -164,12 +187,15 @@ public class Client {
 		} else {
 			jarPath = cliParser.getOptionValue("jar");
 		}
-		numContainers = Integer.parseInt(cliParser.getOptionValue("num_containers", "1"));
+		
+		//save args
 
-		if (numContainers < 1) {
-			throw new IllegalArgumentException("Invalid no. of containers");
+		for(Option o:cliParser.getOptions()){
+			String value=cliParser.getOptionValue(o.getOpt());
+			if(value!=null&&!value.isEmpty())
+			appMasterArgs.put(o.getOpt(),value);			
 		}
-
+		LOG.info("Passing args app master:"+appMasterArgs.toString());
 		return true;
 	}
 
@@ -241,7 +267,7 @@ public class Client {
 		appContext.setApplicationName(YarnConstants.APP_NAME);
 
 		ContainerLaunchContext amContainer = ApplicationMasterLaunchContextFactory.createAppMasterLaunchContext(conf,
-				appId.toString(), jarPath,appMasterClass);
+				appId.toString(), jarPath,appMasterClass,appMasterArgs);
 
 		// Set up resource type requirements
 		Resource capability = Resource.newInstance(YarnConstants.APP_MASTER_MEMORY, YarnConstants.APP_MASTER_VCORES);

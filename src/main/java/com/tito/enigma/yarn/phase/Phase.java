@@ -1,5 +1,7 @@
 package com.tito.enigma.yarn.phase;
 
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -10,11 +12,9 @@ public class Phase implements Runnable {
 	private String id;
 	private PhaseManager phaseManager;
 	private PhaseStatus phaseStatus;
+	private Map<String,String> passedArguments;
 
-	public Phase(String id) {
-		this.id=id;
-		phaseStatus = PhaseStatus.PENDING;
-	}
+	
 
 	@Override
 	public void run() {
@@ -60,6 +60,7 @@ public class Phase implements Runnable {
 
 	public void setPhaseManager(PhaseManager phaseManager) {
 		this.phaseManager = phaseManager;
+		phaseManager.setPhase(this);
 	}
 
 	public synchronized PhaseStatus getPhaseStatus() {
@@ -70,4 +71,13 @@ public class Phase implements Runnable {
 		this.phaseStatus = phaseStatus;
 	}
 
+	public Map<String, String> getPassedArguments() {
+		return passedArguments;
+	}
+
+	public void setPassedArguments(Map<String, String> passedArguments) {
+		this.passedArguments = passedArguments;
+	}
+
+	
 }

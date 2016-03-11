@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.Queue;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
@@ -77,6 +79,8 @@ import com.tito.enigma.yarn.util.YarnConstants;
 public abstract class ApplicationMaster implements ApplicationMasterIF {
 
 	private Options options;
+
+	private Map<String, String> passedArguments = new HashMap<>();
 
 	private static final Log LOG = LogFactory.getLog(ApplicationMaster.class);
 
@@ -154,18 +158,20 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 		boolean result = false;
 		try {
 			Options ops = getMainClassOption();
-			CommandLine cliParser1 = new ExtendedGnuParser(true).parse(ops, args);
-			if (!cliParser1.hasOption("appMasterClass")) {
+			CommandLine cliParser = new ExtendedGnuParser(true).parse(ops, args);
+			if (!cliParser.hasOption("appMasterClass")) {
 				throw new RuntimeException("AppMasterClass is not specified failed to load Application Master");
 			}
 
-			ApplicationMaster appMaster = (ApplicationMaster) Class.forName(cliParser1.getOptionValue("appMasterClass"))
+			ApplicationMaster appMaster = (ApplicationMaster) Class.forName(cliParser.getOptionValue("appMasterClass"))
 					.newInstance();
 
 			LOG.info("Initializing ApplicationMaster");
-			appMaster.setupOptionsAll();
-			CommandLine cliParser = new GnuParser().parse(appMaster.getOptions(), args);
+			appMaster.setupOptionsAll();	
+			////reparse args to assign options 
+			cliParser = new ExtendedGnuParser(true).parse(appMaster.getOptions(), args);
 			boolean doRun = appMaster.initAll(cliParser);
+
 			if (!doRun) {
 				System.exit(0);
 			}
@@ -217,8 +223,7 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 		// Set up the configuration
 		conf = new YarnConfiguration();
 	}
-	
-	
+
 	public Options setupOptionsAll() {
 		options = getMainClassOption();
 		setupDefaultOptions(options);
@@ -227,10 +232,7 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 
 	}
 
-	
-
-	
-	public abstract void setupOptions(Options opts) ;
+	public abstract void setupOptions(Options opts);
 
 	private Options setupDefaultOptions(Options opts) {
 		opts.addOption("jar", true, "Jar file containing the Workers");
@@ -311,7 +313,16 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 				+ appAttemptID.getAttemptId());
 
 		timeLinePublisher = new TimeLinePublisher(conf);
-		return init(cliParser);
+		if (!init(cliParser)) {
+			return false;
+		}
+
+		// save passed arguments
+		for (Option op : cliParser.getOptions()) {
+			passedArguments.put(op.getOpt(), cliParser.getOptionValue(op.getOpt()));
+		}
+
+		return true;
 	}
 
 	/**
@@ -330,7 +341,7 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 	 * @throws YarnException
 	 * @throws IOException
 	 */
-	
+
 	public void run() throws YarnException, IOException {
 		LOG.info("Starting ApplicationMaster");
 		try {
@@ -392,11 +403,12 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 		while (!done && !hasCompleted()) {
 			try {
 				if (currentPhase == null) {
-					if (!pendingPhases.isEmpty()) {						
+					if (!pendingPhases.isEmpty()) {
 						currentPhase = pendingPhases.poll();
+						currentPhase.setPassedArguments(passedArguments);
 						Thread phaseThread = new Thread(currentPhase);
-						phaseThreads.add(phaseThread);						
-						LOG.info("Starting First Phase:"+currentPhase.getId());
+						phaseThreads.add(phaseThread);
+						LOG.info("Starting First Phase:" + currentPhase.getId());
 						phaseThread.start();
 					} else {
 						LOG.error("NO Phases Registered , aborting phase execution");
@@ -405,7 +417,9 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 					continue;
 				}
 				PhaseStatus currentPhaseStatus = currentPhase.getPhaseStatus();
-				if (currentPhaseStatus!=null&&currentPhaseStatus != PhaseStatus.RUNNING) {
+
+				if (currentPhaseStatus != null && currentPhaseStatus != PhaseStatus.RUNNING
+						&& currentPhaseStatus != PhaseStatus.PENDING) {
 					LOG.info("currentPhase.getPhaseStatus()" + currentPhaseStatus);
 					if (currentPhaseStatus == PhaseStatus.SUCCESSED) {
 						LOG.info("Phase Completed successfully : " + currentPhase.getId());
@@ -417,6 +431,7 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 						}
 						if (!pendingPhases.isEmpty()) {
 							currentPhase = pendingPhases.poll();
+							currentPhase.setPassedArguments(passedArguments);
 							Thread phaseThread = new Thread(currentPhase);
 							phaseThreads.add(phaseThread);
 							phaseThread.start();
@@ -428,7 +443,7 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 						done = true;
 					}
 				}
-				Thread.sleep(300);
+				Thread.sleep(1000);
 			} catch (InterruptedException ex) {
 			}
 		}
@@ -482,6 +497,9 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 	}
 
 	public float getProgress() {
+		if (phaseList == null || phaseList.isEmpty()) {
+			return 0;
+		}
 		return completedPhases.size() / phaseList.size();
 	}
 
@@ -504,8 +522,8 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 			}
 			allTokens = ByteBuffer.wrap(dob.getData(), 0, dob.getLength());
 		} catch (IOException e) {
-			LOG.error("extractTokens error={}",e);
-			
+			LOG.error("extractTokens error={}", e);
+
 		}
 
 	}
@@ -524,8 +542,8 @@ public abstract class ApplicationMaster implements ApplicationMasterIF {
 			}
 			return appMasterJar;
 		} catch (IOException e) {
-			LOG.error("getAppJarResource error={}",e);
-					}
+			LOG.error("getAppJarResource error={}", e);
+		}
 		return null;
 
 	}

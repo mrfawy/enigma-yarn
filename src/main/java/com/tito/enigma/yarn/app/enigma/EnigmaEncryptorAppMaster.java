@@ -83,15 +83,16 @@ public class EnigmaEncryptorAppMaster extends ApplicationMaster{
 
 	@Override
 	protected void registerPhases() {
-		
-		Phase generatorPhase=new Phase("Generate Phase");
+		LOG.info("Registering Phases");
+	
 		
 		List<Task> taskList=new ArrayList<>();
 		for(int i=0;i<enigmaCount;i++){
 			
 			TaskContext taskContext=new TaskContext(EnigmaGeneratorTasklet.class);
 			taskContext.addArg("keyDir", keyDir);
-			taskContext.addArg("tempStreamPath", keyDir);
+			taskContext.addArg("tempStreamDir", tempStreamDir);
+			taskContext.addArg("machineId","machine_"+i);
 			long length=getInputLength();
 			if(length==-1){
 				 LOG.error("Failed to get file length:"+plainTextPath);
@@ -99,9 +100,10 @@ public class EnigmaEncryptorAppMaster extends ApplicationMaster{
 			}
 			taskContext.addArg("length", String.valueOf(length));
 			Task genTask=new Task("gen_"+i, taskContext);
+			taskList.add(genTask);
 		}
-		FixedTasksPhaseManager phaseManager = new FixedTasksPhaseManager(this, taskList);
-		generatorPhase.setPhaseManager(phaseManager);
+		FixedTasksPhaseManager phaseManager = new FixedTasksPhaseManager(this, taskList);		
+		Phase generatorPhase=new Phase("Generate Phase",phaseManager);
 		registerPhase(generatorPhase);
 		
 	}
