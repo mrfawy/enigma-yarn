@@ -11,27 +11,27 @@ import com.tito.enigma.config.ExtendedGnuParser;
 
 public abstract class Tasklet implements TaskletIF {
 	private static final Log LOG = LogFactory.getLog(Tasklet.class);
-	
+
 	private Options options;
-	
+
 	private void printUsage() {
-		new HelpFormatter().printHelp("Tasklet",getOptions());
+		new HelpFormatter().printHelp("Tasklet", getOptions());
 	}
 
 	public Options setupOptionsAll() {
-		options = getMainClassOption();		
+		options = getMainClassOption();
 		setupOptions(options);
 		return options;
 
 	}
-	
-	public static Options getMainClassOption(){
+
+	public static Options getMainClassOption() {
 		Options ops = new Options();
 		ops.addOption("TaskletClass", true, "Tasklet Class");
 		return ops;
 	}
-	
-	public boolean initAll(CommandLine cliParser) {	
+
+	public boolean initAll(CommandLine cliParser) {
 		if (cliParser.hasOption("help")) {
 			printUsage();
 			return false;
@@ -39,35 +39,29 @@ public abstract class Tasklet implements TaskletIF {
 		return init(cliParser);
 	}
 
-	
 	public static void main(String[] args) {
 		System.out.println("Inside Tasklet main method");
 		boolean result = false;
-		try {				
-			Options ops = getMainClassOption();			
+		try {
+			Options ops = getMainClassOption();
 			CommandLine cliParser = new ExtendedGnuParser(true).parse(ops, args);
 			if (!cliParser.hasOption("TaskletClass")) {
 				throw new RuntimeException("TaskletClass is not specified failed to load Tasklet");
 			}
 
-			Tasklet tasklet=(Tasklet) Class.forName(cliParser.getOptionValue("TaskletClass"))
-					.newInstance();
-			
+			Tasklet tasklet = (Tasklet) Class.forName(cliParser.getOptionValue("TaskletClass")).newInstance();
+
 			LOG.info("Initializing Tasklet");
-			try {
-				ops=tasklet.setupOptionsAll();	
-				//reparse args to assign options
-				cliParser = new ExtendedGnuParser(true).parse(ops, args);
-				boolean doRun = tasklet.init(cliParser);
-				if (!doRun) {
-					System.exit(0);
-				}
-			} catch (IllegalArgumentException e) {
-				System.err.println(e.getLocalizedMessage());				
-				System.exit(-1);
+
+			ops = tasklet.setupOptionsAll();
+			// reparse args to assign options
+			cliParser = new ExtendedGnuParser(true).parse(ops, args);
+			boolean doRun = tasklet.init(cliParser);
+			if (!doRun) {
+				System.exit(1);
 			}
 			result = tasklet.start();
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			LOG.fatal("Error running CLient", t);
 			System.exit(1);
 		}
@@ -86,6 +80,5 @@ public abstract class Tasklet implements TaskletIF {
 	public void setOptions(Options options) {
 		this.options = options;
 	}
-	
 
 }

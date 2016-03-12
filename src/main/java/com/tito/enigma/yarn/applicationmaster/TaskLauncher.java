@@ -21,10 +21,6 @@ import com.tito.enigma.yarn.phase.PhaseManager;
 import com.tito.enigma.yarn.task.Task;
 import com.tito.enigma.yarn.util.YarnConstants;
 
-/**
- * Thread to connect to the {@link ContainerManagementProtocol} and launch the
- * container that will execute the shell command.
- */
 public class TaskLauncher implements Runnable {
 
 	private static final Log LOG = LogFactory.getLog(TaskLauncher.class);
@@ -68,6 +64,8 @@ public class TaskLauncher implements Runnable {
 			classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
 			classPathEnv.append(c.trim());
 		}
+		classPathEnv.append(ApplicationConstants.CLASS_PATH_SEPARATOR);
+		classPathEnv.append(YarnConstants.APP_JAR);
 		env.put("CLASSPATH", classPathEnv.toString());
 		if (task.getTaskContext().getEnvVariables() != null) {
 			for (String envVar : task.getTaskContext().getEnvVariables().keySet()) {
@@ -79,7 +77,7 @@ public class TaskLauncher implements Runnable {
 
 		// Set java executable command
 		LOG.info("Setting up Enigma Machine container command");
-		vargs.add(Environment.JAVA_HOME.$$() + "/bin/java");
+		vargs.add(Environment.JAVA_HOME.$$() + "/bin/java");		
 		// Set Xmx based on container memory size
 		vargs.add("-Xmx" + ConfigLoader.getContainerMemory() + "m");
 		// Set class name

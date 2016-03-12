@@ -82,25 +82,26 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
+				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
+						<phase>package</phase>
 						<goals>
-							<goal>jar</goal>
+							<goal>single</goal>
 						</goals>
-						<!-- strictly speaking, the unit test is really a regression test. 
-							It needs the main jar to be available to be able to run. -->
-						<phase>test-compile</phase>
 					</execution>
 				</executions>
 				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
 					<archive>
 						<manifest>
 							<mainClass>com.tito.enigma.yarn.client.Client</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
-			</plugin>
+			</plugin>			
 		</plugins>
 	</build>
 </project>

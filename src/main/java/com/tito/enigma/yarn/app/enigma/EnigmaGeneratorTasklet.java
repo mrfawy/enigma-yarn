@@ -22,7 +22,6 @@ import com.tito.enigma.machine.Util;
 import com.tito.enigma.machine.config.ConfigGenerator;
 import com.tito.enigma.machine.config.MachineConfig;
 import com.tito.enigma.machine.config.RotorConfig;
-import com.tito.enigma.queue.Queue;
 import com.tito.enigma.yarn.task.Tasklet;
 
 public class EnigmaGeneratorTasklet extends Tasklet {
@@ -34,7 +33,7 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 	private long length;
 	int minRotorCount;
 	int maxRotorCount;
-	
+
 	List<Rotor> rotors;
 	Reflector reflector;
 	PlugBoard plugBoard;
@@ -98,28 +97,45 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 	public boolean start() {
 		try {
 			generateKey();
-		} catch (IOException e) {
-			LOG.error("Failed To generate Key",e);
+			generateStream();
+			return true;
+		} catch (Exception e) {
+			LOG.error("Failed To generate Key", e);
 			return false;
 		}
-		return false;
+
 	}
 
-	private void generateKey() throws IOException {
+	private void generateKey() {		
 		LOG.info("Running KeyGenerator");
+		FSDataOutputStream fout=null;
+		try{
 		Configuration conf = new Configuration();
 		FileSystem fs = FileSystem.get(conf);
-		Path keyFile = Path.mergePaths(new Path(keyDir), new Path(machineId + ".key"));
+		Path keyFile = Path.mergePaths(new Path(keyDir), new Path(Path.SEPARATOR + machineId + ".key"));
 		if (fs.exists(keyFile)) {
 			LOG.info("Replacing Key file" + keyFile);
 			fs.delete(keyFile, true);
 		}
-		FSDataOutputStream fin = fs.create(keyFile);
+		fout = fs.create(keyFile);
 		ConfigGenerator gen = new ConfigGenerator();
 		String confJson = new ObjectMapper()
 				.writeValueAsString(gen.generateConfiguration(minRotorCount, maxRotorCount));
-		fin.writeUTF(confJson);
-		fin.close();
+		fout.writeUTF(confJson);
+		
+		}catch(Exception ex){
+			LOG.error("Error={}",ex);
+		}finally {
+			if(fout!=null){
+				try {
+					fout.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		}
 	}
 
 	private void generateStream() {
@@ -128,7 +144,7 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 		FileSystem fs;
 		try {
 			fs = FileSystem.get(conf);
-			Path keyFile = Path.mergePaths(new Path(keyDir), new Path(machineId+ ".key"));
+			Path keyFile = Path.mergePaths(new Path(keyDir), new Path(Path.SEPARATOR + machineId + ".key"));
 
 			if (!fs.exists(keyFile)) {
 				LOG.error("File not exists Key file" + keyFile);
@@ -145,56 +161,79 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 			plugBoard = new PlugBoard(machineConfig.getPlugBoardConfig());
 			generateLength(length);
 
-			LOG.info("Done EnigmaGenerator: " + machineId);
-		} catch (IOException e) {			
-			LOG.error("gemerateStream Error={}",e);
+			LOG.info("Done generateStream: " + machineId);
+		} catch (IOException e) {
+			LOG.error("gemerateStream Error={}", e);
 		}
-		
+
 	}
+
 	private void generateLength(long n) {
-		LOG.info("Generating length: " + n);
-		byte[] buffer = new byte[256 * 1000];
-		int bufferOffset = 0;
-		int bufferCount = 0;
-		byte[] input = Util.getArray(256);
-		for (long i = 0; i < n; i++) {
-			input = plugBoard.signalIn(input);
-			for (Rotor r : rotors) {
-				input = r.signalIn(input);
-				r.rotate();
+		FSDataOutputStream fout = null;
+		try {
+			LOG.info("Generating length: " + n);
+			Configuration conf = new Configuration();
+			FileSystem fs = FileSystem.get(conf);
+			Path keyFile = Path.mergePaths(new Path(tempStreamDir), new Path(Path.SEPARATOR + machineId + ".stream"));
+			if (fs.exists(keyFile)) {
+				LOG.info("Replacing Stream file" + keyFile);
+				fs.delete(keyFile, true);
 			}
-			input = reflector.signalIn(input);
-			for (int j = rotors.size() - 1; j >= 0; j--) {
-				input = rotors.get(j).reverseSignalIn(input);
+			fout = fs.create(keyFile);
+			byte[] buffer = new byte[256 * 1000];
+			int bufferOffset = 0;
+			int bufferCount = 0;
+			byte[] input = Util.getArray(256);
+			for (long i = 0; i < n; i++) {
+				input = plugBoard.signalIn(input);
+				for (Rotor r : rotors) {
+					input = r.signalIn(input);
+					r.rotate();
+				}
+				input = reflector.signalIn(input);
+				for (int j = rotors.size() - 1; j >= 0; j--) {
+					input = rotors.get(j).reverseSignalIn(input);
+				}
+				input = plugBoard.reverseSignalIn(input);
+
+				// process stepping/rotating
+				boolean rotateFlag;
+				int rotorIndex = 0;
+				do {
+					rotateFlag = rotors.get(rotorIndex++).rotate();
+				} while (rotateFlag == true);
+
+				if (bufferOffset + input.length <= buffer.length) {
+					System.arraycopy(input, 0, buffer, bufferOffset, input.length);
+					bufferOffset += input.length;
+
+				} else {// if buffer is full
+					fout.write(buffer);
+					bufferOffset = 0;
+					bufferCount++;
+					System.arraycopy(input, 0, buffer, bufferOffset, input.length);
+					bufferOffset += input.length;
+				}
+
 			}
-			input = plugBoard.reverseSignalIn(input);
-
-			// process stepping/rotating
-			boolean rotateFlag;
-			int rotorIndex = 0;
-			do {
-				rotateFlag = rotors.get(rotorIndex++).rotate();
-			} while (rotateFlag == true);
-
-			if (bufferOffset + input.length <= buffer.length) {
-				System.arraycopy(input, 0, buffer, bufferOffset, input.length);
-				bufferOffset += input.length;
-
-			} else {// if buffer is full
-				Queue.geteInstance().put(machineId, String.valueOf(bufferCount), buffer);
-				bufferOffset = 0;
-				bufferCount++;
-				System.arraycopy(input, 0, buffer, bufferOffset, input.length);
-				bufferOffset += input.length;
+			// copy the rest of n if exists
+			if (bufferOffset != 0) {
+				fout.write(buffer);
 			}
+		} catch (Exception e) {
+			LOG.error("Error={}",e);
 
-		}
-		// copy the rest of n if exists
-		if (bufferOffset != 0) {
-			Queue.geteInstance().put(machineId, String.valueOf(bufferCount), buffer);
+		} finally {
+			try {
+				if (fout != null) {
+					fout.close();
+				}
+
+			} catch (IOException e) {
+				LOG.error("ex{}",e);
+			}
 		}
 
 	}
-	 
 
 }
