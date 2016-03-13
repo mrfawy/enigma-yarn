@@ -107,7 +107,7 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 			plugBoard = new PlugBoard(machineConfig.getPlugBoardConfig());
 			generateLength(length);
 
-			LOG.info("Done generateStream: " + specFile);
+			LOG.info("Done generateStream for machine: " + machineId);
 		} catch (IOException e) {
 			LOG.error("gemerateStream Error={}", e);
 		}

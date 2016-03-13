@@ -3,6 +3,7 @@ package com.tito.enigma.yarn.app.enigma;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -202,6 +203,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			FSDataInputStream fin = fs.open(keyFile);
 			String keyJson = fin.readUTF();
 			EnigmaKey key = new ObjectMapper().readValue(keyJson, EnigmaKey.class);
+			LOG.info("Initial Machine Order:"+Arrays.toString(key.getMachineOrder().toArray()));
 			return key.getMachineOrder();
 		} catch (Exception ex) {
 			LOG.error("Error={}", ex);

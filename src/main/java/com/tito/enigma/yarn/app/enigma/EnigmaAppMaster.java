@@ -109,16 +109,16 @@ public class EnigmaAppMaster extends ApplicationMaster {
 
 	}
 
-	private long getInputLength() {
+	private long getInputLength(String filePath) {
 
 		try {
 			Configuration conf = getConf();
 
 			FileSystem fs = FileSystem.get(conf);
-			Path input = new Path(plainTextPath);
+			Path input = new Path(filePath);
 			if (!fs.exists(input)) {
-				LOG.error("plainTextPathh doesn't exist:" + plainTextPath);
-				throw new RuntimeException("plainTextPathh doesn't exist:" + plainTextPath);
+				LOG.error("File doesn't exist:" + filePath);
+				throw new RuntimeException("File doesn't exist:" + filePath);
 			}
 			FileStatus fileStatus = fs.getFileStatus(input);
 			return fileStatus.getLen();
@@ -200,7 +200,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		}
 		registerPhase(keyGenPhase);
 
-		long length = getInputLength();
+		long length = getInputLength(plainTextPath);
 		if (length == -1) {
 			LOG.error("Failed to determine input length");
 			throw new RuntimeException("Failed to determine input length");
@@ -224,7 +224,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 	private void registerDecryptPhase() {
 		LOG.info("Registering Decryption Phases");
 
-		long length = getInputLength();
+		long length = getInputLength(cipherTextPath);
 		if (length == -1) {
 			LOG.error("Failed to determine input length");
 			throw new RuntimeException("Failed to determine input length");
