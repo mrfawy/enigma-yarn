@@ -90,14 +90,13 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 		FileSystem fs;
 		try {
 			fs = FileSystem.get(conf);
-			Path keyFile = Path.mergePaths(new Path(enigmaTempDir),
-					new Path(Path.SEPARATOR + "key" + Path.SEPARATOR + machineId + ".key"));
+			Path specFile = new Path(enigmaTempDir+Path.SEPARATOR + machineId + ".spec");
 
-			if (!fs.exists(keyFile)) {
-				LOG.error("File not exists Key file" + keyFile);
-				throw new RuntimeException("Key file doesn't exist" + keyFile);
+			if (!fs.exists(specFile)) {
+				LOG.error("Spec file doesn't exist" + specFile);
+				throw new RuntimeException("Spec file doesn't exist" + specFile);
 			}
-			FSDataInputStream fin = fs.open(keyFile);
+			FSDataInputStream fin = fs.open(specFile);
 			String confJson = fin.readUTF();
 			MachineConfig machineConfig = new ObjectMapper().readValue(confJson, MachineConfig.class);
 			rotors = new ArrayList<>();
@@ -108,7 +107,7 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 			plugBoard = new PlugBoard(machineConfig.getPlugBoardConfig());
 			generateLength(length);
 
-			LOG.info("Done generateStream: " + machineId);
+			LOG.info("Done generateStream: " + specFile);
 		} catch (IOException e) {
 			LOG.error("gemerateStream Error={}", e);
 		}
@@ -121,8 +120,7 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 			LOG.info("Generating length: " + n);
 			Configuration conf = new Configuration();
 			FileSystem fs = FileSystem.get(conf);
-			Path keyFile = Path.mergePaths(new Path(enigmaTempDir),
-					new Path(Path.SEPARATOR + "stream" + Path.SEPARATOR + machineId + ".stream"));
+			Path keyFile = new Path(enigmaTempDir+Path.SEPARATOR + machineId + ".stream");
 			if (fs.exists(keyFile)) {
 				LOG.info("Replacing Stream file" + keyFile);
 				fs.delete(keyFile, true);

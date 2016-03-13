@@ -99,21 +99,30 @@ public abstract class PhaseManager {
 	}
 
 	public void start() {
-		LOG.info("PhaseManager Start");
-		defineTasks();
-		LOG.info("PhaseManager TaskListSize:"+taskList.size());
-		LOG.info("PhaseManager Pending:"+pendingTasks.size());
-		LOG.info("PhaseManager Failed:"+failedTasks.size());
-		LOG.info("PhaseManager Completed:"+completedTasks.size());
-		if (!checkDependencies()) {
-			throw new RuntimeException("Dependencies Check is not met , aborting phase");
+		try{
+			LOG.info("PhaseManager Start");
+			defineTasks();
+			LOG.info("PhaseManager TaskListSize:"+taskList.size());
+			LOG.info("PhaseManager Pending:"+pendingTasks.size());
+			LOG.info("PhaseManager Failed:"+failedTasks.size());
+			LOG.info("PhaseManager Completed:"+completedTasks.size());
+			if (!checkDependencies()) {
+				throw new RuntimeException("Dependencies Check is not met , aborting phase");
+			}
+			if(phaseListener!=null){
+				phaseListener.onPhaseStarted(phase);
+			}
+			int requiredCotainers = pendingTasks.size();
+			LOG.info("Required containers initially: " + requiredCotainers);		
+			
+			sendRequestForContainers(requiredCotainers);
+		}catch(Exception ex){
+			LOG.error("Phase error,aborting pending tasks={}",ex);
+			while(!pendingTasks.isEmpty()){
+				failedTasks.add(pendingTasks.poll());
+			}
 		}
-		int requiredCotainers = pendingTasks.size();
-		LOG.info("Required containers initially: " + requiredCotainers);		
-		if(phaseListener!=null){
-			phaseListener.onPhaseStarted(phase);
-		}
-		sendRequestForContainers(requiredCotainers);
+		
 	}
 
 	private void sendRequestForContainers(int n) {
@@ -255,7 +264,7 @@ public abstract class PhaseManager {
 	}
 
 	public boolean hasCompletedSuccessfully() {
-		return hasCompleted() && failedTasks.size() == 0;
+		return hasCompleted() && failedTasks.size() == 0 ;
 	}
 
 	public AtomicInteger getNumRequestedContainers() {

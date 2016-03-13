@@ -17,7 +17,6 @@ import com.tito.enigma.machine.config.EnigmaKey;
 import com.tito.enigma.machine.config.MachineConfig;
 import com.tito.enigma.yarn.phase.Phase;
 import com.tito.enigma.yarn.phase.PhaseListenerIF;
-import com.tito.enigma.yarn.phase.PhaseStatus;
 import com.tito.enigma.yarn.task.Task;
 
 public class KeyGeneratorPhaseListener implements PhaseListenerIF {
@@ -50,7 +49,7 @@ public class KeyGeneratorPhaseListener implements PhaseListenerIF {
 				Map<String,MachineConfig> machinConfigMap=new HashMap<>();
 				
 				for(String machineId:enigmaEncryptorAppMaster.getMachineIdList()){
-					Path configFile = Path.mergePaths(new Path(enigmaEncryptorAppMaster.getEnigmaTempDir()), new Path(Path.SEPARATOR +"key"+Path.SEPARATOR+ machineId + ".key"));
+					Path configFile = new Path(enigmaEncryptorAppMaster.getEnigmaTempDir()+Path.SEPARATOR + machineId + ".spec");
 
 					if (!fs.exists(configFile)) {
 						LOG.error("File not exists config file" + configFile);

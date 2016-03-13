@@ -41,19 +41,22 @@ public class EnigmaAppMaster extends ApplicationMaster {
 			return false;
 		}
 		String operation = commandLine.getOptionValue("operation");
-		if (!operation.toLowerCase().startsWith("E") && !operation.toLowerCase().startsWith("D")) {
+		if (!operation.equalsIgnoreCase("e") && !operation.equalsIgnoreCase("d")) {
 			LOG.error("Invalid operation, please specify E or D");
 			return false;
 		}
-		if (operation.toLowerCase().startsWith("E")) {
+		if (operation.toLowerCase().startsWith("e")) {
 			isEncrypt = true;
 		}
 
-		if (!commandLine.hasOption("enigmaCount")) {
-			LOG.error("Missing enigmaCount");
-			return false;
-		} else {
-			enigmaCount = Integer.parseInt(commandLine.getOptionValue("enigmaCount"));
+		if (isEncrypt) {
+			if (!commandLine.hasOption("enigmaCount")) {
+				LOG.error("Missing enigmaCount");
+				return false;
+			} else {
+				enigmaCount = Integer.parseInt(commandLine.getOptionValue("enigmaCount"));
+			}
+
 		}
 
 		if (!commandLine.hasOption("plainTextPath")) {
@@ -99,7 +102,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 	@Override
 	protected void registerPhases() {
 		if (isEncrypt) {
-			registerEncryptPhase();
+			registerEncryptPhases();
 		} else {
 			registerDecryptPhase();
 		}
@@ -126,7 +129,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		}
 	}
 
-	private Phase createKeyGeneratorPhase(int machineCount) {
+	private Phase createKeyGeneratorPhase(int machineCount,String keyPath) {
 
 		List<Task> taskList = new ArrayList<>();
 		for (int i = 0; i < machineCount; i++) {
@@ -139,27 +142,14 @@ public class EnigmaAppMaster extends ApplicationMaster {
 			taskList.add(genTask);
 		}
 		FixedTasksPhaseManager phaseManager = new FixedTasksPhaseManager(this, taskList,
-				new KeyGeneratorPhaseListener(this));
+				new KeyGeneratorPhaseListener(this, keyPath));
 		Phase keyGeneratorPhase = new Phase("Generate Phase", phaseManager);
 		return keyGeneratorPhase;
 	}
 
-	private Phase createStreamGeneratorPhase(String keyPath, String tmpDir, long length) {
-		// parse key and find machines
-		EnigmaKey enigmaKey = loadKey(keyPath);
-		if (enigmaKey == null) {
-			return null;
-		}
-		List<Task> taskList = new ArrayList<>();
-		for (String machineId : enigmaKey.getMachineOrder()) {
-			TaskContext taskContext = new TaskContext(EnigmaStreamGeneratorTasklet.class);
-			taskContext.addArg("enigmaTempDir", tmpDir);
-			taskContext.addArg("machineId", machineId);
-			Task genTask = new Task("stream_" + machineId, taskContext);
-			taskList.add(genTask);
-		}
-		FixedTasksPhaseManager phaseManager = new FixedTasksPhaseManager(this, taskList,
-				new KeyGeneratorPhaseListener(this));
+	private Phase createStreamGeneratorPhase(String keyPath, String tmpDir, long length) {		
+		
+		StreamPhaseManager phaseManager = new StreamPhaseManager(this,keyPath,tmpDir,length,null);
 		Phase streamPhase = new Phase("Stream Phase", phaseManager);
 		return streamPhase;
 
@@ -180,7 +170,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 
 	}
 
-	private EnigmaKey loadKey(String keyPath) {
+	public EnigmaKey loadKey(String keyPath) {
 		Configuration conf = new Configuration();
 		FileSystem fs;
 		try {
@@ -200,10 +190,10 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		}
 	}
 
-	private void registerEncryptPhase() {
+	private void registerEncryptPhases() {
 		LOG.info("Registering Encryption Phases");
 
-		Phase keyGenPhase = createKeyGeneratorPhase(enigmaCount);
+		Phase keyGenPhase = createKeyGeneratorPhase(enigmaCount,keyPath);
 		if (keyGenPhase == null) {
 			LOG.error("Failed to create Key Generator phase");
 			throw new RuntimeException("Failed to create Key Generator phase");
