@@ -28,6 +28,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 	private static final int STREAM_BUFFER_SIZE=256*INPUT_BUFFER_SIZE;
 
 	private String enigmaTempDir;
+	private String keyPath;
 	private String inputPath;
 	private String outputPath;
 
@@ -36,6 +37,12 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	@Override
 	public boolean init(CommandLine commandLine) {
+		if (!commandLine.hasOption("keyPath")) {
+			LOG.error("Missing keyPath");
+			return false;
+		}
+		keyPath = commandLine.getOptionValue("keyPath");
+		
 		if (!commandLine.hasOption("enigmaTempDir")) {
 			LOG.error("Missing enigmaTempDir");
 			return false;
@@ -59,6 +66,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	@Override
 	public void setupOptions(Options opts) {
+		opts.addOption("keyPath", true, "EngimaKey.key file path");
 		opts.addOption("enigmaTempDir", true, "Enigma temp directory , looking for /key/EnigmaKey & /stream/");
 		opts.addOption("inputPath", true, "input file to combine path");
 		opts.addOption("outputPath", true, "output file to generate");

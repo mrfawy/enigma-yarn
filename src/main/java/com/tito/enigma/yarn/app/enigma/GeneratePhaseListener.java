@@ -23,9 +23,9 @@ import com.tito.enigma.yarn.task.Task;
 public class GeneratePhaseListener implements PhaseListenerIF {
 	private static final Log LOG = LogFactory.getLog(GeneratePhaseListener.class);
 
-	EnigmaEncryptorAppMaster enigmaEncryptorAppMaster;
+	EnigmaAppMaster enigmaEncryptorAppMaster;
 
-	public GeneratePhaseListener(EnigmaEncryptorAppMaster enigmaEncryptorAppMaster) {
+	public GeneratePhaseListener(EnigmaAppMaster enigmaEncryptorAppMaster) {
 
 		this.enigmaEncryptorAppMaster = enigmaEncryptorAppMaster;
 	}

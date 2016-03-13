@@ -1,6 +1,7 @@
 package com.tito.enigma.yarn.app.enigma;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,19 +20,18 @@ import com.tito.enigma.machine.PlugBoard;
 import com.tito.enigma.machine.Reflector;
 import com.tito.enigma.machine.Rotor;
 import com.tito.enigma.machine.Util;
-import com.tito.enigma.machine.config.ConfigGenerator;
 import com.tito.enigma.machine.config.MachineConfig;
 import com.tito.enigma.machine.config.RotorConfig;
 import com.tito.enigma.yarn.task.Tasklet;
 
-public class EnigmaGeneratorTasklet extends Tasklet {
-	private static final Log LOG = LogFactory.getLog(EnigmaGeneratorTasklet.class);
+public class EnigmaStreamGeneratorTasklet extends Tasklet {
+	private static final Log LOG = LogFactory.getLog(EnigmaStreamGeneratorTasklet.class);
 
-	private String machineId;	
+	private static final int BUFFER_SIZE = 256 * 1000;
+
+	private String machineId;
 	private String enigmaTempDir;
 	private long length;
-	int minRotorCount;
-	int maxRotorCount;
 
 	List<Rotor> rotors;
 	Reflector reflector;
@@ -53,7 +53,7 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 		} else {
 			enigmaTempDir = commandLine.getOptionValue("enigmaTempDir");
 		}
-		
+
 		if (!commandLine.hasOption("length")) {
 			LOG.error("Missing length");
 			return false;
@@ -61,17 +61,6 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 			length = Long.valueOf(commandLine.getOptionValue("length"));
 		}
 
-		if (!commandLine.hasOption("minRotorCount")) {
-			minRotorCount = 1;
-		} else {
-			minRotorCount = Integer.valueOf(commandLine.getOptionValue("minRotorCount"));
-		}
-
-		if (!commandLine.hasOption("maxRotorCount")) {
-			maxRotorCount = 5;
-		} else {
-			maxRotorCount = Integer.valueOf(commandLine.getOptionValue("maxRotorCount"));
-		}
 		return true;
 	}
 
@@ -79,16 +68,13 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 	public void setupOptions(Options opts) {
 		opts.addOption("machineId", true, "Engima Machine Id");
 		opts.addOption("enigmaTempDir", true, "Directory to store key and streams");
-		opts.addOption("length", true, "length of bytes to generate");		
-		opts.addOption("minRotorCount", true, "min Rotor Count for a machine");
-		opts.addOption("maxRotorCount", true, "max Rotor Count");
+		opts.addOption("length", true, "length of bytes to generate");
 
 	}
 
 	@Override
 	public boolean start() {
 		try {
-			generateKey();
 			generateStream();
 			return true;
 		} catch (Exception e) {
@@ -98,45 +84,14 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 
 	}
 
-	private void generateKey() {		
-		LOG.info("Running KeyGenerator");
-		FSDataOutputStream fout=null;
-		try{
-		Configuration conf = new Configuration();
-		FileSystem fs = FileSystem.get(conf);
-		Path keyFile = Path.mergePaths(new Path(enigmaTempDir), new Path(Path.SEPARATOR +"key"+ Path.SEPARATOR +machineId + ".key"));
-		if (fs.exists(keyFile)) {
-			LOG.info("Replacing Key file" + keyFile);
-			fs.delete(keyFile, true);
-		}
-		fout = fs.create(keyFile);
-		ConfigGenerator gen = new ConfigGenerator();
-		String confJson = new ObjectMapper()
-				.writeValueAsString(gen.generateConfiguration(minRotorCount, maxRotorCount));
-		fout.writeUTF(confJson);
-		
-		}catch(Exception ex){
-			LOG.error("Error={}",ex);
-		}finally {
-			if(fout!=null){
-				try {
-					fout.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			
-		}
-	}
-
 	private void generateStream() {
 		LOG.info("Running generateStream");
 		Configuration conf = new Configuration();
 		FileSystem fs;
 		try {
 			fs = FileSystem.get(conf);
-			Path keyFile = Path.mergePaths(new Path(enigmaTempDir), new Path(Path.SEPARATOR+"key"+Path.SEPARATOR + machineId + ".key"));
+			Path keyFile = Path.mergePaths(new Path(enigmaTempDir),
+					new Path(Path.SEPARATOR + "key" + Path.SEPARATOR + machineId + ".key"));
 
 			if (!fs.exists(keyFile)) {
 				LOG.error("File not exists Key file" + keyFile);
@@ -166,15 +121,15 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 			LOG.info("Generating length: " + n);
 			Configuration conf = new Configuration();
 			FileSystem fs = FileSystem.get(conf);
-			Path keyFile = Path.mergePaths(new Path(enigmaTempDir), new Path(Path.SEPARATOR+"stream"+Path.SEPARATOR + machineId + ".stream"));
+			Path keyFile = Path.mergePaths(new Path(enigmaTempDir),
+					new Path(Path.SEPARATOR + "stream" + Path.SEPARATOR + machineId + ".stream"));
 			if (fs.exists(keyFile)) {
 				LOG.info("Replacing Stream file" + keyFile);
 				fs.delete(keyFile, true);
 			}
 			fout = fs.create(keyFile);
-			byte[] buffer = new byte[256 * 1000];
-			int bufferOffset = 0;
-			int bufferCount = 0;
+			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+			buffer.clear();
 			byte[] input = Util.getArray(256);
 			for (long i = 0; i < n; i++) {
 				input = plugBoard.signalIn(input);
@@ -195,25 +150,20 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 					rotateFlag = rotors.get(rotorIndex++).rotate();
 				} while (rotateFlag == true);
 
-				if (bufferOffset + input.length <= buffer.length) {
-					System.arraycopy(input, 0, buffer, bufferOffset, input.length);
-					bufferOffset += input.length;
-
-				} else {// if buffer is full
-					fout.write(buffer);
-					bufferOffset = 0;
-					bufferCount++;
-					System.arraycopy(input, 0, buffer, bufferOffset, input.length);
-					bufferOffset += input.length;
+				buffer.put(input);
+				if (!buffer.hasRemaining()) {
+					fout.write(buffer.array());
+					buffer.clear();
 				}
 
 			}
 			// copy the rest of n if exists
-			if (bufferOffset != 0) {
-				fout.write(buffer);
+			if (buffer.position() != 0) {
+				fout.write(buffer.array());
+				buffer.clear();
 			}
 		} catch (Exception e) {
-			LOG.error("Error={}",e);
+			LOG.error("Error={}", e);
 
 		} finally {
 			try {
@@ -222,11 +172,10 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 				}
 
 			} catch (IOException e) {
-				LOG.error("ex{}",e);
+				LOG.error("ex{}", e);
 			}
 		}
 
 	}
-	
 
 }
