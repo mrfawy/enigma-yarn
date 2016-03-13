@@ -27,9 +27,8 @@ import com.tito.enigma.yarn.task.Tasklet;
 public class EnigmaGeneratorTasklet extends Tasklet {
 	private static final Log LOG = LogFactory.getLog(EnigmaGeneratorTasklet.class);
 
-	private String machineId;
-	private String keyDir;
-	private String tempStreamDir;
+	private String machineId;	
+	private String enigmaTempDir;
 	private long length;
 	int minRotorCount;
 	int maxRotorCount;
@@ -48,19 +47,13 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 			machineId = commandLine.getOptionValue("machineId");
 		}
 
-		if (!commandLine.hasOption("keyDir")) {
-			LOG.error("Missing keyDir");
+		if (!commandLine.hasOption("enigmaTempDir")) {
+			LOG.error("Missing enigmaTempDir");
 			return false;
 		} else {
-			keyDir = commandLine.getOptionValue("keyDir");
+			enigmaTempDir = commandLine.getOptionValue("enigmaTempDir");
 		}
-
-		if (!commandLine.hasOption("tempStreamDir")) {
-			LOG.error("Missing tempStreamDir");
-			return false;
-		} else {
-			tempStreamDir = commandLine.getOptionValue("tempStreamDir");
-		}
+		
 		if (!commandLine.hasOption("length")) {
 			LOG.error("Missing length");
 			return false;
@@ -85,9 +78,8 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 	@Override
 	public void setupOptions(Options opts) {
 		opts.addOption("machineId", true, "Engima Machine Id");
-		opts.addOption("keyDir", true, "Directory to store key");
-		opts.addOption("length", true, "length of bytes to generate");
-		opts.addOption("tempStreamDir", true, "Directory to write internal machine streams");
+		opts.addOption("enigmaTempDir", true, "Directory to store key and streams");
+		opts.addOption("length", true, "length of bytes to generate");		
 		opts.addOption("minRotorCount", true, "min Rotor Count for a machine");
 		opts.addOption("maxRotorCount", true, "max Rotor Count");
 
@@ -112,7 +104,7 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 		try{
 		Configuration conf = new Configuration();
 		FileSystem fs = FileSystem.get(conf);
-		Path keyFile = Path.mergePaths(new Path(keyDir), new Path(Path.SEPARATOR + machineId + ".key"));
+		Path keyFile = Path.mergePaths(new Path(enigmaTempDir), new Path(Path.SEPARATOR +"key"+ Path.SEPARATOR +machineId + ".key"));
 		if (fs.exists(keyFile)) {
 			LOG.info("Replacing Key file" + keyFile);
 			fs.delete(keyFile, true);
@@ -144,7 +136,7 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 		FileSystem fs;
 		try {
 			fs = FileSystem.get(conf);
-			Path keyFile = Path.mergePaths(new Path(keyDir), new Path(Path.SEPARATOR + machineId + ".key"));
+			Path keyFile = Path.mergePaths(new Path(enigmaTempDir), new Path(Path.SEPARATOR+"key"+Path.SEPARATOR + machineId + ".key"));
 
 			if (!fs.exists(keyFile)) {
 				LOG.error("File not exists Key file" + keyFile);
@@ -174,7 +166,7 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 			LOG.info("Generating length: " + n);
 			Configuration conf = new Configuration();
 			FileSystem fs = FileSystem.get(conf);
-			Path keyFile = Path.mergePaths(new Path(tempStreamDir), new Path(Path.SEPARATOR + machineId + ".stream"));
+			Path keyFile = Path.mergePaths(new Path(enigmaTempDir), new Path(Path.SEPARATOR+"stream"+Path.SEPARATOR + machineId + ".stream"));
 			if (fs.exists(keyFile)) {
 				LOG.info("Replacing Stream file" + keyFile);
 				fs.delete(keyFile, true);
@@ -235,5 +227,6 @@ public class EnigmaGeneratorTasklet extends Tasklet {
 		}
 
 	}
+	
 
 }

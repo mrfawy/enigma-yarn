@@ -30,7 +30,7 @@ public class HelloWorldAppMaster extends ApplicationMaster {
 			Task t = new Task("task" + i, new TaskContext(HelloWorldTasklet.class));
 			List<Task> fixedTasks = new ArrayList<>();
 			fixedTasks.add(t);
-			Phase phase1 = new Phase("phase 1", new FixedTasksPhaseManager(this, fixedTasks));
+			Phase phase1 = new Phase("phase 1", new FixedTasksPhaseManager(this, fixedTasks,null));
 			registerPhase(phase1);
 		}
 

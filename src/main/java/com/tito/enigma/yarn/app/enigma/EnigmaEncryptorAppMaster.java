@@ -19,105 +19,107 @@ import com.tito.enigma.yarn.phase.Phase;
 import com.tito.enigma.yarn.task.Task;
 import com.tito.enigma.yarn.task.TaskContext;
 
-public class EnigmaEncryptorAppMaster extends ApplicationMaster{
+public class EnigmaEncryptorAppMaster extends ApplicationMaster {
 	private static final Log LOG = LogFactory.getLog(EnigmaEncryptorAppMaster.class);
 
 	private int enigmaCount;
-	private String keyDir;
 	private String plainTextPath;
 	private String cipherTextPath;
-	private String tempStreamDir;
-	
+	private String enigmaTempDir;
+
+	private List<String> machineIdList = new ArrayList<>();
+
 	@Override
 	public boolean init(CommandLine commandLine) {
-		if(!commandLine.hasOption("enigmaCount")){
-			LOG.error("Missing enigmaCount");			
+		if (!commandLine.hasOption("enigmaCount")) {
+			LOG.error("Missing enigmaCount");
 			return false;
-		}
-		else{
-			enigmaCount=Integer.parseInt(commandLine.getOptionValue("enigmaCount"));
-		}
-		
-		if(!commandLine.hasOption("keyDir")){
-			LOG.error("Missing keyDir");			
-			return false;
-		}
-		else{
-			keyDir=commandLine.getOptionValue("keyDir");
+		} else {
+			enigmaCount = Integer.parseInt(commandLine.getOptionValue("enigmaCount"));
 		}
 
-		if(!commandLine.hasOption("plainTextPath")){
-			LOG.error("Missing plainTextPath");			
+		if (!commandLine.hasOption("plainTextPath")) {
+			LOG.error("Missing plainTextPath");
 			return false;
-		}
-		else{
-			plainTextPath=commandLine.getOptionValue("plainTextPath");
+		} else {
+			plainTextPath = commandLine.getOptionValue("plainTextPath");
 		}
 
-		if(!commandLine.hasOption("cipherTextPath")){
-			LOG.error("Missing cipherTextPath");			
+		if (!commandLine.hasOption("cipherTextPath")) {
+			LOG.error("Missing cipherTextPath");
 			return false;
+		} else {
+			cipherTextPath = commandLine.getOptionValue("cipherTextPath");
 		}
-		else{
-			cipherTextPath=commandLine.getOptionValue("cipherTextPath");
-		}
-		if(!commandLine.hasOption("tempStreamDir")){
-			LOG.error("Missing tempStreamDir");			
+		if (!commandLine.hasOption("enigmaTempDir")) {
+			LOG.error("Missing enigmaTempDir");
 			return false;
-		}
-		else{
-			tempStreamDir=commandLine.getOptionValue("tempStreamDir");
+		} else {
+			enigmaTempDir = commandLine.getOptionValue("enigmaTempDir");
 		}
 		return true;
 	}
 
 	@Override
 	public void setupOptions(Options opts) {
-		opts.addOption("enigmaCount",true,"Number of Engima Machines to encrypt with");
-		opts.addOption("keyDir",true,"Directory to store key");
-		opts.addOption("plainTextPath",true,"File to encrypt");
-		opts.addOption("cipherTextPath",true,"Path to write encrypted file to");
-		opts.addOption("tempStreamDir",true,"Directory to write internal machine streams");
-		
+		opts.addOption("enigmaCount", true, "Number of Engima Machines to encrypt with");
+		opts.addOption("plainTextPath", true, "File to encrypt");
+		opts.addOption("cipherTextPath", true, "Path to write encrypted file to");
+		opts.addOption("enigmaTempDir", true, "Directory to write internal machine streams and generated Key");
+
 	}
 
 	@Override
 	protected void registerPhases() {
 		LOG.info("Registering Phases");
-	
-		
-		List<Task> taskList=new ArrayList<>();
-		for(int i=0;i<enigmaCount;i++){
-			
-			TaskContext taskContext=new TaskContext(EnigmaGeneratorTasklet.class);
-			taskContext.addArg("keyDir", keyDir);
-			taskContext.addArg("tempStreamDir", tempStreamDir);
-			taskContext.addArg("machineId","machine_"+i);
-			long length=getInputLength();
-			if(length==-1){
-				 LOG.error("Failed to get file length:"+plainTextPath);
-	                throw new RuntimeException("Failed to get file length:"+plainTextPath);
+
+		List<Task> taskList = new ArrayList<>();
+		for (int i = 0; i < enigmaCount; i++) {
+			String machineId = "machine_" + i;
+			machineIdList.add(machineId);
+			TaskContext taskContext = new TaskContext(EnigmaGeneratorTasklet.class);
+			taskContext.addArg("enigmaTempDir", enigmaTempDir);			
+			taskContext.addArg("machineId", machineId);
+			long length = getInputLength();
+			if (length == -1) {
+				LOG.error("Failed to get file length:" + plainTextPath);
+				throw new RuntimeException("Failed to get file length:" + plainTextPath);
 			}
 			taskContext.addArg("length", String.valueOf(length));
-			Task genTask=new Task("gen_"+i, taskContext);
+			Task genTask = new Task("gen_" + i, taskContext);
 			taskList.add(genTask);
 		}
-		FixedTasksPhaseManager phaseManager = new FixedTasksPhaseManager(this, taskList);		
-		Phase generatorPhase=new Phase("Generate Phase",phaseManager);
+		FixedTasksPhaseManager phaseManager = new FixedTasksPhaseManager(this, taskList,
+				new GeneratePhaseListener(this));
+		Phase generatorPhase = new Phase("Generate Phase", phaseManager);
 		registerPhase(generatorPhase);
+
+		// combine phase
+		List<Task> combineTasks = new ArrayList<>();
+		TaskContext combineTaskContext = new TaskContext(EnigmaCombinerTasklet.class);
+		combineTaskContext.addArg("inputPath", plainTextPath);
+		combineTaskContext.addArg("outputPath", cipherTextPath);
+		combineTaskContext.addArg("enigmaTempDir", enigmaTempDir);
+		Task combineTask=new  Task("CombineTask", combineTaskContext);
+		combineTasks.add(combineTask);
+		FixedTasksPhaseManager combinePhaseManager = new FixedTasksPhaseManager(this, combineTasks,
+				null);
+		Phase combinePhase = new Phase("Combine", combinePhaseManager);
+		registerPhase(combinePhase);
 		
 	}
-	private long getInputLength(){
-		
-        try {
-        	Configuration conf = getConf();
-            
-            FileSystem fs = FileSystem.get(conf);
-            Path input = new Path(plainTextPath);
-            if (!fs.exists(input)) {
-                LOG.error("plainTextPathh doesn't exist:"+plainTextPath);
-                throw new RuntimeException("plainTextPathh doesn't exist:"+plainTextPath);
-            }
+
+	private long getInputLength() {
+
+		try {
+			Configuration conf = getConf();
+
+			FileSystem fs = FileSystem.get(conf);
+			Path input = new Path(plainTextPath);
+			if (!fs.exists(input)) {
+				LOG.error("plainTextPathh doesn't exist:" + plainTextPath);
+				throw new RuntimeException("plainTextPathh doesn't exist:" + plainTextPath);
+			}
 			FileStatus fileStatus = fs.getFileStatus(input);
 			return fileStatus.getLen();
 		} catch (IOException e) {
@@ -127,6 +129,47 @@ public class EnigmaEncryptorAppMaster extends ApplicationMaster{
 		}
 	}
 
+	public int getEnigmaCount() {
+		return enigmaCount;
+	}
 
+	public void setEnigmaCount(int enigmaCount) {
+		this.enigmaCount = enigmaCount;
+	}
+
+	
+
+	public String getEnigmaTempDir() {
+		return enigmaTempDir;
+	}
+
+	public void setEnigmaTempDir(String enigmaTempDir) {
+		this.enigmaTempDir = enigmaTempDir;
+	}
+
+	public String getPlainTextPath() {
+		return plainTextPath;
+	}
+
+	public void setPlainTextPath(String plainTextPath) {
+		this.plainTextPath = plainTextPath;
+	}
+
+	public String getCipherTextPath() {
+		return cipherTextPath;
+	}
+
+	public void setCipherTextPath(String cipherTextPath) {
+		this.cipherTextPath = cipherTextPath;
+	}
+	
+
+	public List<String> getMachineIdList() {
+		return machineIdList;
+	}
+
+	public void setMachineIdList(List<String> machineIdList) {
+		this.machineIdList = machineIdList;
+	}
 
 }
