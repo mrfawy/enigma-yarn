@@ -20,14 +20,15 @@ import com.tito.enigma.yarn.phase.PhaseListenerIF;
 import com.tito.enigma.yarn.phase.PhaseStatus;
 import com.tito.enigma.yarn.task.Task;
 
-public class GeneratePhaseListener implements PhaseListenerIF {
-	private static final Log LOG = LogFactory.getLog(GeneratePhaseListener.class);
+public class KeyGeneratorPhaseListener implements PhaseListenerIF {
+	private static final Log LOG = LogFactory.getLog(KeyGeneratorPhaseListener.class);
 
 	EnigmaAppMaster enigmaEncryptorAppMaster;
-
-	public GeneratePhaseListener(EnigmaAppMaster enigmaEncryptorAppMaster) {
+	private String outputKeyPath;
+	public KeyGeneratorPhaseListener(EnigmaAppMaster enigmaEncryptorAppMaster,String outputKeyPath) {
 
 		this.enigmaEncryptorAppMaster = enigmaEncryptorAppMaster;
+		this.outputKeyPath=outputKeyPath;
 	}
 
 	@Override
@@ -65,8 +66,7 @@ public class GeneratePhaseListener implements PhaseListenerIF {
 				EnigmaKey enigmaKey=new EnigmaKey();
 				enigmaKey.setMachineConfig(machinConfigMap);
 				enigmaKey.setMachineOrder(enigmaEncryptorAppMaster.getMachineIdList());
-				Path keyFile = Path.mergePaths(new Path(enigmaEncryptorAppMaster.getEnigmaTempDir()),
-						new Path(Path.SEPARATOR +"key"+Path.SEPARATOR+ "EnigmaKey.key"));
+				Path keyFile = new Path(outputKeyPath);
 				if (fs.exists(keyFile)) {
 					LOG.info("Replacing key file" + keyFile);
 					fs.delete(keyFile, true);

@@ -139,7 +139,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 			taskList.add(genTask);
 		}
 		FixedTasksPhaseManager phaseManager = new FixedTasksPhaseManager(this, taskList,
-				new GeneratePhaseListener(this));
+				new KeyGeneratorPhaseListener(this));
 		Phase keyGeneratorPhase = new Phase("Generate Phase", phaseManager);
 		return keyGeneratorPhase;
 	}
@@ -159,7 +159,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 			taskList.add(genTask);
 		}
 		FixedTasksPhaseManager phaseManager = new FixedTasksPhaseManager(this, taskList,
-				new GeneratePhaseListener(this));
+				new KeyGeneratorPhaseListener(this));
 		Phase streamPhase = new Phase("Stream Phase", phaseManager);
 		return streamPhase;
 

@@ -23,9 +23,9 @@ import com.tito.enigma.yarn.task.Tasklet;
 public class EnigmaCombinerTasklet extends Tasklet {
 
 	private static final Log LOG = LogFactory.getLog(EnigmaCombinerTasklet.class);
-	
-	private static final int INPUT_BUFFER_SIZE=1024*100;
-	private static final int STREAM_BUFFER_SIZE=256*INPUT_BUFFER_SIZE;
+
+	private static final int INPUT_BUFFER_SIZE = 1024 * 100;
+	private static final int STREAM_BUFFER_SIZE = 256 * INPUT_BUFFER_SIZE;
 
 	private String enigmaTempDir;
 	private String keyPath;
@@ -42,7 +42,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			return false;
 		}
 		keyPath = commandLine.getOptionValue("keyPath");
-		
+
 		if (!commandLine.hasOption("enigmaTempDir")) {
 			LOG.error("Missing enigmaTempDir");
 			return false;
@@ -87,7 +87,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 		try {
 			processStreams();
 		} catch (IOException e) {
-			LOG.error("FAILED TO PROCESS STREAMS",e);
+			LOG.error("FAILED TO PROCESS STREAMS", e);
 			return false;
 		}
 
@@ -95,79 +95,79 @@ public class EnigmaCombinerTasklet extends Tasklet {
 	}
 
 	private boolean processStreams() throws IOException {
-		FSDataInputStream inputStream=null;
-		FSDataOutputStream outputStream=null;
-		try{
+		FSDataInputStream inputStream = null;
+		FSDataOutputStream outputStream = null;
+		try {
 			Configuration conf = new Configuration();
 			FileSystem fs = FileSystem.get(conf);
-			Path inputFile=new Path(inputPath);
-			if(!fs.exists(inputFile)){
+			Path inputFile = new Path(inputPath);
+			if (!fs.exists(inputFile)) {
 				LOG.error("File Not found" + inputFile);
 				return false;
 			}
 			inputStream = fs.open(inputFile);
-			
-			Path outputFile=new Path(outputPath);
-			if(fs.exists(outputFile)){
+
+			Path outputFile = new Path(outputPath);
+			if (fs.exists(outputFile)) {
 				LOG.error("Replacing output file " + outputFile);
-				fs.delete(outputFile,true);
-				
+				fs.delete(outputFile, true);
+
 			}
-			outputStream=fs.create(outputFile);
+			outputStream = fs.create(outputFile);
 			byte inputBuffer[] = new byte[INPUT_BUFFER_SIZE];
 			ByteBuffer outBuffer = ByteBuffer.allocate(INPUT_BUFFER_SIZE);
 			int read;
-			while((read = inputStream.read(inputBuffer)) != -1){
-				for(int i=0;i<read;i++){
-					byte input=inputBuffer[i];
-					List<List<byte[]>> mapping=readStreamMapping(machineStreamList);
-					for(List<byte[]> map:mapping){
-						input=map.get(i)[Util.toUnsigned(input)];
+			while ((read = inputStream.read(inputBuffer)) != -1) {
+				for (int i = 0; i < read; i++) {
+					byte input = inputBuffer[i];
+					List<List<byte[]>> mapping = readStreamMapping(machineStreamList);
+					for (List<byte[]> map : mapping) {
+						input = map.get(i)[Util.toUnsigned(input)];
 					}
 					outBuffer.put(input);
 				}
 				outputStream.write(outBuffer.array());
 			}
 			return true;
-			
-		}catch(Exception ex){
+
+		} catch (Exception ex) {
 			LOG.error("Error={}", ex);
 			return false;
-		}finally {
-			if(outputStream!=null){
+		} finally {
+			if (outputStream != null) {
 				outputStream.close();
 			}
-			if(inputStream!=null){
+			if (inputStream != null) {
 				inputStream.close();
 			}
-			if(machineStreamList!=null&&!machineStreamList.isEmpty()){
-				for(FSDataInputStream stream:machineStreamList){
+			if (machineStreamList != null && !machineStreamList.isEmpty()) {
+				for (FSDataInputStream stream : machineStreamList) {
 					stream.close();
 				}
 			}
 		}
-		
 
 	}
-	private List<List<byte[]>> readStreamMapping(List<FSDataInputStream> streams) throws IOException{
-		List<List<byte[]>> result=new ArrayList<>();
-		for(FSDataInputStream stream:streams){
-			ByteBuffer buffer=ByteBuffer.allocate(STREAM_BUFFER_SIZE);
+
+	private List<List<byte[]>> readStreamMapping(List<FSDataInputStream> streams) throws IOException {
+		List<List<byte[]>> result = new ArrayList<>();
+		for (FSDataInputStream stream : streams) {
+			ByteBuffer buffer = ByteBuffer.allocate(STREAM_BUFFER_SIZE);
 			buffer.clear();
-			stream.read(buffer);			
-			List<byte[]> map=new ArrayList<>();
+			stream.read(buffer);
+			List<byte[]> map = new ArrayList<>();
 			buffer.rewind();
-			for(int i=0;i<buffer.limit()/256;i++){					
-				byte[] tmp=new byte[256];
+			for (int i = 0; i < buffer.limit() / 256; i++) {
+				byte[] tmp = new byte[256];
 				buffer.get(tmp);
 				map.add(tmp);
 			}
 			result.add(map);
 		}
 		return result;
-		
-		
+
 	}
+
 	private List<FSDataInputStream> getMachineStreams(List<String> machineSequence) {
 		try {
 			List<FSDataInputStream> machineStreamList = new ArrayList<>();
@@ -175,7 +175,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			FileSystem fs = FileSystem.get(conf);
 			for (String machineId : machineSequence) {
 				Path streamFile = Path.mergePaths(new Path(enigmaTempDir),
-						new Path(Path.SEPARATOR + "stream" + Path.SEPARATOR + machineId + ".stream"));
+						new Path(Path.SEPARATOR + machineId + ".stream"));
 				if (!fs.exists(streamFile)) {
 					LOG.error("Stream Not found :" + streamFile);
 					return null;
@@ -194,9 +194,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 		try {
 			Configuration conf = new Configuration();
 			FileSystem fs = FileSystem.get(conf);
-			Path keyFile = Path.mergePaths(new Path(enigmaTempDir),
-					new Path(Path.SEPARATOR + "key" + Path.SEPARATOR + "EnigmaKey.key"));
-
+			Path keyFile = new Path(keyPath);
 			if (!fs.exists(keyFile)) {
 				LOG.error("Key Not found :" + keyFile);
 				throw new RuntimeException("Key Not found :" + keyFile);
