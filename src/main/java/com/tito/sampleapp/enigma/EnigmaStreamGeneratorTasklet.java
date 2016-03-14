@@ -64,8 +64,7 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 	@Override
 	public boolean start() {
 		try {
-			generateStream();
-			return true;
+			return generateStream();		
 		} catch (Exception e) {
 			LOG.error("Failed To generate Key", e);
 			return false;

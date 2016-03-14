@@ -8,13 +8,11 @@ import com.tito.enigma.component.Util;
 public class StreamCombiner {
 
 	public ByteBuffer combine(ByteBuffer input, List<ByteBuffer> machineMapping) {
-
-		input.rewind();
+		input.flip();
 		int inputSize = input.limit();
-		ByteBuffer output = ByteBuffer.allocate(inputSize);
-		output.clear();
+		ByteBuffer output = ByteBuffer.allocate(inputSize);		
 		for (ByteBuffer machineMap : machineMapping) {
-			machineMap.rewind();
+			machineMap.flip();
 		}
 
 		for (int i = 0; i < inputSize; i++) {

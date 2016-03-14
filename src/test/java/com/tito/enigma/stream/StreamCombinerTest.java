@@ -15,19 +15,20 @@ public class StreamCombinerTest {
 	@Test
 	public void test() {
 		int inputSize = 10;
+		int INPUT_BUFFER_SIZE=100*1024;
+		ByteBuffer input = ByteBuffer.allocate(INPUT_BUFFER_SIZE);
 		int machineCount=3;
 		List<ByteBuffer> machineMaps = new ArrayList<>();
 		for (int i = 0; i < machineCount; i++) {
-			ByteBuffer map = ByteBuffer.allocate(256 * inputSize);
+			ByteBuffer map = ByteBuffer.allocate(256 * 100);
 			for (int j = 0; j < inputSize; j++) {
 				map.put(Shuffler.getShuffledArray(256));
 			}
 			machineMaps.add(map);
 		}
 
-		ByteBuffer input = ByteBuffer.allocate(inputSize);
-		input.put(Util.getArray(10));
-		
+
+		input.put(Util.getArray(inputSize));		
 		StreamCombiner sc=new StreamCombiner();
 		ByteBuffer output= sc.combine(input, machineMaps);
 		Assert.assertEquals(output.position(), inputSize);

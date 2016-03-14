@@ -121,10 +121,10 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			outputStream = fs.create(outputFile);
 			ByteBuffer inputBuffer = ByteBuffer.allocate(INPUT_BUFFER_SIZE);
 			int read;
-			while ((read = inputStream.read(inputBuffer)) != -1) {
+			while ((read = inputStream.read(inputBuffer)) != -1) {				
 				List<ByteBuffer> mapping = readStreamMapping(machineStreamList);
 				ByteBuffer outputBuffer = streamCombiner.combine(inputBuffer, mapping);
-				outputBuffer.rewind();
+				outputBuffer.flip();
 				byte[] data = new byte[outputBuffer.limit()];
 				outputBuffer.get(data);
 				outputStream.write(data);
