@@ -9,7 +9,7 @@ public class FixedTasksPhaseManager extends PhaseManager {
 
 	private List<Task> taskList;
 
-	public FixedTasksPhaseManager(ApplicationMaster appMaster, List<Task> taskList,PhaseListenerIF listener) {
+	public FixedTasksPhaseManager(ApplicationMaster appMaster, List<Task> taskList,PhaseListener listener) {
 		super(appMaster,listener);
 		this.taskList = taskList;
 

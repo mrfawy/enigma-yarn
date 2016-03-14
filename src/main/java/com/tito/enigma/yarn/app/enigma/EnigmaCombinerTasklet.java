@@ -96,6 +96,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 	}
 
 	private boolean processStreams() throws IOException {
+		LOG.info("Starting processStreams");
 		FSDataInputStream inputStream = null;
 		FSDataOutputStream outputStream = null;
 		try {
@@ -115,12 +116,13 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 			}
 			outputStream = fs.create(outputFile);
-			byte inputBuffer[] = new byte[INPUT_BUFFER_SIZE];
+			ByteBuffer inputBuffer = ByteBuffer.allocate(INPUT_BUFFER_SIZE);
 			ByteBuffer outBuffer = ByteBuffer.allocate(INPUT_BUFFER_SIZE);
 			int read;
 			while ((read = inputStream.read(inputBuffer)) != -1) {
+				inputBuffer.rewind();
 				for (int i = 0; i < read; i++) {
-					byte input = inputBuffer[i];
+					byte input=inputBuffer.get();					
 					List<List<byte[]>> mapping = readStreamMapping(machineStreamList);
 					for (List<byte[]> map : mapping) {
 						input = map.get(i)[Util.toUnsigned(input)];
@@ -128,7 +130,11 @@ public class EnigmaCombinerTasklet extends Tasklet {
 					outBuffer.put(input);
 				}
 				outputStream.write(outBuffer.array());
+				inputBuffer.clear();
+				outBuffer.clear();
+				
 			}
+			LOG.info("ProcessStream Done");
 			return true;
 
 		} catch (Exception ex) {
@@ -184,6 +190,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 				FSDataInputStream fin = fs.open(streamFile);
 				machineStreamList.add(fin);
 			}
+			LOG.info("Opened machineStreamList of size:"+machineStreamList.size());
 			return machineStreamList;
 		} catch (Exception ex) {
 			LOG.error("Error={}", ex);

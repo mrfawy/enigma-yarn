@@ -9,10 +9,15 @@ import org.apache.commons.logging.LogFactory;
 
 import com.tito.enigma.config.ExtendedGnuParser;
 
-public abstract class Tasklet implements TaskletIF {
+public abstract class Tasklet  {
 	private static final Log LOG = LogFactory.getLog(Tasklet.class);
 
 	private Options options;
+	
+	public abstract void setupOptions(Options options) ;
+	public abstract boolean init(CommandLine cliParser) ;
+	public abstract boolean start();
+	
 
 	private void printUsage() {
 		new HelpFormatter().printHelp("Tasklet", getOptions());
@@ -24,6 +29,8 @@ public abstract class Tasklet implements TaskletIF {
 		return options;
 
 	}
+
+	
 
 	public static Options getMainClassOption() {
 		Options ops = new Options();
@@ -38,6 +45,8 @@ public abstract class Tasklet implements TaskletIF {
 		}
 		return init(cliParser);
 	}
+
+	
 
 	public static void main(String[] args) {
 		System.out.println("Inside Tasklet main method");
@@ -72,6 +81,7 @@ public abstract class Tasklet implements TaskletIF {
 		LOG.error("Application failed to complete successfully");
 		System.exit(2);
 	}
+
 
 	public Options getOptions() {
 		return options;

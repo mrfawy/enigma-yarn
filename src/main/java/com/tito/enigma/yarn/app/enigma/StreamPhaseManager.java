@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.tito.enigma.machine.config.EnigmaKey;
-import com.tito.enigma.yarn.phase.PhaseListenerIF;
+import com.tito.enigma.yarn.phase.PhaseListener;
 import com.tito.enigma.yarn.phase.PhaseManager;
 import com.tito.enigma.yarn.task.Task;
 import com.tito.enigma.yarn.task.TaskContext;
@@ -19,7 +19,7 @@ public class StreamPhaseManager extends PhaseManager {
 	private EnigmaKey enigmaKey;
 
 	public StreamPhaseManager(EnigmaAppMaster appMaster, String keyPath, String tmpDir, long length,
-			PhaseListenerIF listener) {
+			PhaseListener listener) {
 		super(appMaster, listener);
 		this.appMaster = appMaster;
 		this.keyPath = keyPath;

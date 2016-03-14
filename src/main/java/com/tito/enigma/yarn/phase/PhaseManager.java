@@ -41,7 +41,7 @@ public abstract class PhaseManager {
 	private static final Log LOG = LogFactory.getLog(PhaseManager.class);
 
 	private ApplicationMaster applicationMaster;
-	PhaseListenerIF phaseListener;
+	PhaseListener phaseListener;
 
 	private Phase phase;
 
@@ -63,7 +63,7 @@ public abstract class PhaseManager {
 	
 	
 
-	public PhaseManager(ApplicationMaster appMaster,PhaseListenerIF phaseListener) {
+	public PhaseManager(ApplicationMaster appMaster,PhaseListener phaseListener) {
 		this.applicationMaster = appMaster;
 		this.phaseListener=phaseListener;
 	}

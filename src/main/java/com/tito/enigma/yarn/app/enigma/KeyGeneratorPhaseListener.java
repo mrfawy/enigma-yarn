@@ -16,10 +16,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tito.enigma.machine.config.EnigmaKey;
 import com.tito.enigma.machine.config.MachineConfig;
 import com.tito.enigma.yarn.phase.Phase;
-import com.tito.enigma.yarn.phase.PhaseListenerIF;
+import com.tito.enigma.yarn.phase.PhaseListener;
 import com.tito.enigma.yarn.task.Task;
 
-public class KeyGeneratorPhaseListener implements PhaseListenerIF {
+public class KeyGeneratorPhaseListener implements PhaseListener {
 	private static final Log LOG = LogFactory.getLog(KeyGeneratorPhaseListener.class);
 
 	EnigmaAppMaster enigmaEncryptorAppMaster;

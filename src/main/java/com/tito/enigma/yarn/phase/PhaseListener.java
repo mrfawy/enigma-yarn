@@ -2,7 +2,7 @@ package com.tito.enigma.yarn.phase;
 
 import com.tito.enigma.yarn.task.Task;
 
-public interface PhaseListenerIF {
+public interface PhaseListener {
 
 	public void onPhaseStarted(Phase phase);
 	public void onPhaseCompleted(Phase phase);	
