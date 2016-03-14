@@ -97,7 +97,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>com.tito.enigma.yarn.client.Client</mainClass>
+							<mainClass>com.tito.easyyarn.client.Client</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
