@@ -32,6 +32,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 	private String keyPath;
 	private String inputPath;
 	private String outputPath;
+	private boolean isReversed;
 
 	private StreamCombiner streamCombiner;
 
@@ -63,7 +64,10 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			return false;
 		}
 		outputPath = commandLine.getOptionValue("outputPath");
-
+		
+		if (commandLine.hasOption("reversed")&&commandLine.getOptionValue("reversed").equalsIgnoreCase("true")) {
+			isReversed=true;			
+		}
 		return true;
 	}
 
@@ -73,6 +77,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 		opts.addOption("enigmaTempDir", true, "Enigma temp directory , looking for /key/EnigmaKey & /stream/");
 		opts.addOption("inputPath", true, "input file to combine path");
 		opts.addOption("outputPath", true, "output file to generate");
+		opts.addOption("reversed", true, "Reverse combining direction , true in case of decrypt scenario");
 
 	}
 
@@ -100,6 +105,9 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	private boolean processStreams() throws IOException {
 		LOG.info("Starting processStreams");
+		if(isReversed){
+			LOG.info("Processing Stream reversed");
+		}
 		FSDataInputStream inputStream = null;
 		FSDataOutputStream outputStream = null;
 		try {
@@ -123,7 +131,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			int read;
 			while ((read = inputStream.read(inputBuffer)) != -1) {				
 				List<ByteBuffer> mapping = readStreamMapping(machineStreamList);
-				ByteBuffer outputBuffer = streamCombiner.combine(inputBuffer, mapping);
+				ByteBuffer outputBuffer = streamCombiner.combine(inputBuffer, mapping,isReversed);
 				outputBuffer.flip();
 				byte[] data = new byte[outputBuffer.limit()];
 				outputBuffer.get(data);

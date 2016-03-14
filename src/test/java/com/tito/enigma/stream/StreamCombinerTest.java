@@ -30,7 +30,7 @@ public class StreamCombinerTest {
 
 		input.put(Util.getArray(inputSize));		
 		StreamCombiner sc=new StreamCombiner();
-		ByteBuffer output= sc.combine(input, machineMaps);
+		ByteBuffer output= sc.combine(input, machineMaps,false);
 		Assert.assertEquals(output.position(), inputSize);
 		//check single first element
 		byte element=input.get(0);

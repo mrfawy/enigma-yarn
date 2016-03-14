@@ -160,13 +160,14 @@ public class EnigmaAppMaster extends ApplicationMaster {
 
 	}
 
-	private Phase createCombinerPhase(String keyPath, String inputPath, String outputPath, String tmpDir) {
+	private Phase createCombinerPhase(String keyPath, String inputPath, String outputPath, String tmpDir,boolean reversed) {
 		List<Task> combineTasks = new ArrayList<>();
 		TaskContext combineTaskContext = new TaskContext(EnigmaCombinerTasklet.class);
 		combineTaskContext.addArg("keyPath", keyPath);
 		combineTaskContext.addArg("enigmaTempDir", tmpDir);
 		combineTaskContext.addArg("inputPath", inputPath);
 		combineTaskContext.addArg("outputPath", outputPath);
+		combineTaskContext.addArg("reversed", String.valueOf(reversed));
 		Task combineTask = new Task("CombineTask", combineTaskContext);
 		combineTasks.add(combineTask);
 		FixedTasksPhaseManager combinePhaseManager = new FixedTasksPhaseManager(this, combineTasks, null);
@@ -201,7 +202,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		}
 		registerPhase(streamPhase);
 
-		Phase combinePhase = createCombinerPhase(keyPath, plainTextPath, cipherTextPath, enigmaTempDir);
+		Phase combinePhase = createCombinerPhase(keyPath, plainTextPath, cipherTextPath, enigmaTempDir,false);
 		if (combinePhase == null) {
 			LOG.error("Failed to create Combine phase");
 			throw new RuntimeException("Failed to create Combine phase");
@@ -225,7 +226,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		}
 		registerPhase(streamPhase);
 
-		Phase combinePhase = createCombinerPhase(keyPath, cipherTextPath, plainTextPath, enigmaTempDir);
+		Phase combinePhase = createCombinerPhase(keyPath, cipherTextPath, plainTextPath, enigmaTempDir,true);
 		if (combinePhase == null) {
 			LOG.error("Failed to create Combine phase");
 			throw new RuntimeException("Failed to create Combine phase");

@@ -12,4 +12,12 @@ public class Util {
 		}
 		return x;
 	}
+	public static byte[] reverseByteMap(byte[] map){
+		byte[] result=new byte[map.length];
+		for(int i=0;i<map.length;i++){
+			result[Util.toUnsigned(map[i])]=(byte)i;
+		}
+		return result;
+	}
+	
 }

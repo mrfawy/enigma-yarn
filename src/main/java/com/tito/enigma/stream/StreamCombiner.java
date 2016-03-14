@@ -7,7 +7,7 @@ import com.tito.enigma.component.Util;
 
 public class StreamCombiner {
 
-	public ByteBuffer combine(ByteBuffer input, List<ByteBuffer> machineMapping) {
+	public ByteBuffer combine(ByteBuffer input, List<ByteBuffer> machineMapping,boolean reversed) {
 		input.flip();
 		int inputSize = input.limit();
 		ByteBuffer output = ByteBuffer.allocate(inputSize);		
@@ -20,10 +20,14 @@ public class StreamCombiner {
 			for (ByteBuffer machineMap : machineMapping) {
 				byte[] map = new byte[256];
 				machineMap.get(map);
+				if(reversed){
+					map=Util.reverseByteMap(map);
+				}
 				inputByte = map[Util.toUnsigned(inputByte)];
 			}
 			output.put(inputByte);
 		}
 		return output;
 	}
+	
 }
