@@ -86,7 +86,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		} else {
 			keyPath = commandLine.getOptionValue("keyPath");
 		}
-		if (commandLine.hasOption("usingKey")) {			
+		if (commandLine.hasOption("usingKey")&&commandLine.getOptionValue("usingKey").equalsIgnoreCase("true")) {			
 			skipKeyGeneration=true;
 		}
 		return true;
@@ -98,7 +98,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		opts.addOption("plainTextPath", true, "File to encrypt");
 		opts.addOption("cipherTextPath", true, "Path to write encrypted file to");
 		opts.addOption("keyPath", true, "Path to EnigmaKey.key file");
-		opts.addOption("usingKey",true,"Force Engima to encrypt using the provided key , instead of generating new key");
+		opts.addOption("usingKey",true,"true|false :Force Engima to encrypt using the provided key , instead of generating new key");
 		opts.addOption("enigmaTempDir", true, "Directory to write internal machine streams and generated Key");
 		opts.addOption("enigmaCount", true, "Number of Engima Machines to encrypt with");
 
@@ -175,25 +175,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 
 	}
 
-	public EnigmaKey loadKey(String keyPath) {
-		Configuration conf = new Configuration();
-		FileSystem fs;
-		try {
-			fs = FileSystem.get(conf);
-			Path keyFile = new Path(keyPath);
-			if (!fs.exists(keyFile)) {
-				LOG.error("Key not found ," + keyFile);
-				return null;
-			}
-			FSDataInputStream fin = fs.open(keyFile);
-			String keyJson = fin.readUTF();
-			EnigmaKey enigmaKey = new ObjectMapper().readValue(keyJson, EnigmaKey.class);
-			return enigmaKey;
-		} catch (Exception ex) {
-			LOG.error("Error={}", ex);
-			return null;
-		}
-	}
+	
 
 	private void registerEncryptPhases() {
 		LOG.info("Registering Encryption Phases");

@@ -12,14 +12,16 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tito.easyyarn.task.Tasklet;
+import com.tito.enigma.component.EnigmaKeyUtil;
+import com.tito.enigma.config.EnigmaKey;
 import com.tito.enigma.config.MachineConfig;
 import com.tito.enigma.stream.StreamGenerator;
 
 public class EnigmaStreamGeneratorTasklet extends Tasklet {
 	private static final Log LOG = LogFactory.getLog(EnigmaStreamGeneratorTasklet.class);
 
+	private String keyPath;
 	private String machineId;
 	private String enigmaTempDir;
 	private long length;
@@ -28,6 +30,13 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 
 	@Override
 	public boolean init(CommandLine commandLine) {
+		
+		if (!commandLine.hasOption("keyPath")) {
+			LOG.error("Missing keyPath");
+			return false;
+		} else {
+			keyPath = commandLine.getOptionValue("keyPath");
+		}
 
 		if (!commandLine.hasOption("machineId")) {
 			LOG.error("Missing machineId");
@@ -55,6 +64,7 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 
 	@Override
 	public void setupOptions(Options opts) {
+		opts.addOption("keyPath", true, "Path to EnigmaKey.key file");
 		opts.addOption("machineId", true, "Engima Machine Id");
 		opts.addOption("enigmaTempDir", true, "Directory to store key and streams");
 		opts.addOption("length", true, "length of bytes to generate");
@@ -74,20 +84,14 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 
 	private boolean generateStream() {
 		LOG.info("Running generateStream");
+		EnigmaKey enigmaKey=EnigmaKeyUtil.loadKey(keyPath);
 		Configuration conf = new Configuration();
 		FileSystem fs;
 		FSDataInputStream fin = null;
 		FSDataOutputStream fout = null;
 		try {
-			fs = FileSystem.get(conf);
-			Path specFile = new Path(enigmaTempDir + Path.SEPARATOR + machineId + ".spec");
-			if (!fs.exists(specFile)) {
-				LOG.error("Spec file doesn't exist" + specFile);
-				return false;
-			}
-			fin = fs.open(specFile);
-			String confJson = fin.readUTF();
-			MachineConfig machineConfig = new ObjectMapper().readValue(confJson, MachineConfig.class);
+			fs = FileSystem.get(conf);			
+			MachineConfig machineConfig = enigmaKey.getMachineConfig().get(machineId);
 
 			Path keyFile = new Path(enigmaTempDir + Path.SEPARATOR + machineId + ".stream");
 			if (fs.exists(keyFile)) {
@@ -95,7 +99,6 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 				fs.delete(keyFile, true);
 			}
 			fout = fs.create(keyFile);
-
 			streamGenerator = new StreamGenerator(machineConfig);
 			if (!streamGenerator.generateLength(length, fout)) {
 				LOG.error("Failed to generate stream");
