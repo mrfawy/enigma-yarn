@@ -18,8 +18,8 @@ import org.apache.hadoop.fs.Path;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tito.easyyarn.task.Tasklet;
-import com.tito.enigma.component.Util;
 import com.tito.enigma.config.EnigmaKey;
+import com.tito.enigma.stream.StreamCombiner;
 
 public class EnigmaCombinerTasklet extends Tasklet {
 
@@ -32,6 +32,8 @@ public class EnigmaCombinerTasklet extends Tasklet {
 	private String keyPath;
 	private String inputPath;
 	private String outputPath;
+
+	private StreamCombiner streamCombiner;
 
 	List<String> machineSequence;
 	List<FSDataInputStream> machineStreamList;
@@ -86,6 +88,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 		}
 
 		try {
+			streamCombiner = new StreamCombiner();
 			processStreams();
 		} catch (IOException e) {
 			LOG.error("FAILED TO PROCESS STREAMS", e);
@@ -117,22 +120,16 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			}
 			outputStream = fs.create(outputFile);
 			ByteBuffer inputBuffer = ByteBuffer.allocate(INPUT_BUFFER_SIZE);
-			ByteBuffer outBuffer = ByteBuffer.allocate(INPUT_BUFFER_SIZE);
 			int read;
 			while ((read = inputStream.read(inputBuffer)) != -1) {
-				inputBuffer.rewind();
-				for (int i = 0; i < read; i++) {
-					byte input=inputBuffer.get();					
-					List<List<byte[]>> mapping = readStreamMapping(machineStreamList);
-					for (List<byte[]> map : mapping) {
-						input = map.get(i)[Util.toUnsigned(input)];
-					}
-					outBuffer.put(input);
-				}
-				outputStream.write(outBuffer.array());
+				List<ByteBuffer> mapping = readStreamMapping(machineStreamList);
+				ByteBuffer outputBuffer = streamCombiner.combine(inputBuffer, mapping);
+				outputBuffer.rewind();
+				byte[] data = new byte[outputBuffer.limit()];
+				outputBuffer.get(data);
+				outputStream.write(data);
 				inputBuffer.clear();
-				outBuffer.clear();
-				
+
 			}
 			LOG.info("ProcessStream Done");
 			return true;
@@ -156,20 +153,13 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	}
 
-	private List<List<byte[]>> readStreamMapping(List<FSDataInputStream> streams) throws IOException {
-		List<List<byte[]>> result = new ArrayList<>();
+	private List<ByteBuffer> readStreamMapping(List<FSDataInputStream> streams) throws IOException {
+		List<ByteBuffer> result = new ArrayList<>();
 		for (FSDataInputStream stream : streams) {
 			ByteBuffer buffer = ByteBuffer.allocate(STREAM_BUFFER_SIZE);
 			buffer.clear();
 			stream.read(buffer);
-			List<byte[]> map = new ArrayList<>();
-			buffer.rewind();
-			for (int i = 0; i < buffer.limit() / 256; i++) {
-				byte[] tmp = new byte[256];
-				buffer.get(tmp);
-				map.add(tmp);
-			}
-			result.add(map);
+			result.add(buffer);
 		}
 		return result;
 
@@ -190,7 +180,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 				FSDataInputStream fin = fs.open(streamFile);
 				machineStreamList.add(fin);
 			}
-			LOG.info("Opened machineStreamList of size:"+machineStreamList.size());
+			LOG.info("Opened machineStreamList of size:" + machineStreamList.size());
 			return machineStreamList;
 		} catch (Exception ex) {
 			LOG.error("Error={}", ex);
@@ -210,7 +200,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			FSDataInputStream fin = fs.open(keyFile);
 			String keyJson = fin.readUTF();
 			EnigmaKey key = new ObjectMapper().readValue(keyJson, EnigmaKey.class);
-			LOG.info("Initial Machine Order:"+Arrays.toString(key.getMachineOrder().toArray()));
+			LOG.info("Initial Machine Order:" + Arrays.toString(key.getMachineOrder().toArray()));
 			return key.getMachineOrder();
 		} catch (Exception ex) {
 			LOG.error("Error={}", ex);

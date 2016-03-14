@@ -1,9 +1,6 @@
 package com.tito.sampleapp.enigma;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -17,25 +14,17 @@ import org.apache.hadoop.fs.Path;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tito.easyyarn.task.Tasklet;
-import com.tito.enigma.component.PlugBoard;
-import com.tito.enigma.component.Reflector;
-import com.tito.enigma.component.Rotor;
-import com.tito.enigma.component.Util;
 import com.tito.enigma.config.MachineConfig;
-import com.tito.enigma.config.RotorConfig;
+import com.tito.enigma.stream.StreamGenerator;
 
 public class EnigmaStreamGeneratorTasklet extends Tasklet {
 	private static final Log LOG = LogFactory.getLog(EnigmaStreamGeneratorTasklet.class);
-
-	private static final int BUFFER_SIZE = 256 * 1000;
 
 	private String machineId;
 	private String enigmaTempDir;
 	private long length;
 
-	List<Rotor> rotors;
-	Reflector reflector;
-	PlugBoard plugBoard;
+	StreamGenerator streamGenerator;
 
 	@Override
 	public boolean init(CommandLine commandLine) {
@@ -84,94 +73,55 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 
 	}
 
-	private void generateStream() {
+	private boolean generateStream() {
 		LOG.info("Running generateStream");
 		Configuration conf = new Configuration();
 		FileSystem fs;
-		try {
-			fs = FileSystem.get(conf);
-			Path specFile = new Path(enigmaTempDir+Path.SEPARATOR + machineId + ".spec");
-
-			if (!fs.exists(specFile)) {
-				LOG.error("Spec file doesn't exist" + specFile);
-				throw new RuntimeException("Spec file doesn't exist" + specFile);
-			}
-			FSDataInputStream fin = fs.open(specFile);
-			String confJson = fin.readUTF();
-			MachineConfig machineConfig = new ObjectMapper().readValue(confJson, MachineConfig.class);
-			rotors = new ArrayList<>();
-			for (RotorConfig rc : machineConfig.getRotorConfigs()) {
-				rotors.add(new Rotor(rc));
-			}
-			reflector = new Reflector(machineConfig.getReflectorConfig());
-			plugBoard = new PlugBoard(machineConfig.getPlugBoardConfig());
-			generateLength(length);
-
-			LOG.info("Done generateStream for machine: " + machineId);
-		} catch (IOException e) {
-			LOG.error("gemerateStream Error={}", e);
-		}
-
-	}
-
-	private void generateLength(long n) {
+		FSDataInputStream fin = null;
 		FSDataOutputStream fout = null;
 		try {
-			LOG.info("Generating length: " + n);
-			Configuration conf = new Configuration();
-			FileSystem fs = FileSystem.get(conf);
-			Path keyFile = new Path(enigmaTempDir+Path.SEPARATOR + machineId + ".stream");
+			fs = FileSystem.get(conf);
+			Path specFile = new Path(enigmaTempDir + Path.SEPARATOR + machineId + ".spec");
+			if (!fs.exists(specFile)) {
+				LOG.error("Spec file doesn't exist" + specFile);
+				return false;
+			}
+			fin = fs.open(specFile);
+			String confJson = fin.readUTF();
+			MachineConfig machineConfig = new ObjectMapper().readValue(confJson, MachineConfig.class);
+
+			Path keyFile = new Path(enigmaTempDir + Path.SEPARATOR + machineId + ".stream");
 			if (fs.exists(keyFile)) {
 				LOG.info("Replacing Stream file" + keyFile);
 				fs.delete(keyFile, true);
 			}
 			fout = fs.create(keyFile);
-			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-			buffer.clear();
-			byte[] input = Util.getArray(256);
-			for (long i = 0; i < n; i++) {
-				input = plugBoard.signalIn(input);
-				for (Rotor r : rotors) {
-					input = r.signalIn(input);
-					r.rotate();
-				}
-				input = reflector.signalIn(input);
-				for (int j = rotors.size() - 1; j >= 0; j--) {
-					input = rotors.get(j).reverseSignalIn(input);
-				}
-				input = plugBoard.reverseSignalIn(input);
 
-				// process stepping/rotating
-				boolean rotateFlag;
-				int rotorIndex = 0;
-				do {
-					rotateFlag = rotors.get(rotorIndex++).rotate();
-				} while (rotateFlag == true);
-
-				buffer.put(input);
-				if (!buffer.hasRemaining()) {
-					fout.write(buffer.array());
-					buffer.clear();
-				}
-
+			streamGenerator = new StreamGenerator(machineConfig);
+			if (!streamGenerator.generateLength(length, fout)) {
+				LOG.error("Failed to generate stream");
+				return false;
 			}
-			// copy the rest of n if exists
-			if (buffer.position() != 0) {
-				fout.write(buffer.array());
-				buffer.clear();
-			}
-		} catch (Exception e) {
-			LOG.error("Error={}", e);
-
+			LOG.info("Done generateStream for machine: " + machineId);
+			return true;
+		} catch (IOException e) {
+			LOG.error("gemerateStream Error={}", e);
+			return false;
 		} finally {
 			try {
+				if (fin != null) {
+					fin.close();
+				}
 				if (fout != null) {
 					fout.close();
 				}
+				return true;
 
 			} catch (IOException e) {
-				LOG.error("ex{}", e);
+
+				LOG.error("error={}", e);
 			}
+
 		}
 
 	}

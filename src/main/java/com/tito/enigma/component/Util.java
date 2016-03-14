@@ -8,7 +8,7 @@ public class Util {
 	public static byte[] getArray(int n){
 		byte[] x = new byte[n];
 		for (int i = 0; i < n; i++) {
-			x[i] = (byte) -1;
+			x[i] = (byte) i;
 		}
 		return x;
 	}

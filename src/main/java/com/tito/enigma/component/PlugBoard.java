@@ -21,9 +21,9 @@ public class PlugBoard implements Switch {
 		byte[] result = new byte[256];
 		for (int i = 0; i < 256; i++) {
 			if (map.containsKey(in[i])) {
-				result[i] = map.get(i);
+				result[i] = map.get(in[i]);
 			} else {
-				result[i] = (byte)i;
+				result[i] = (byte)in[i];
 			}
 		}
 		return result;

@@ -13,6 +13,18 @@ import com.tito.enigma.config.ConfigGenerator;
 import com.tito.enigma.config.RotorConfig;
 
 public class ConfigGeneratorTest {
+	
+	@Test
+	public void testGenerateConfiguration(){
+		ConfigGenerator cf = new ConfigGenerator();
+		MachineConfig config = cf.generateConfiguration(5, 10);
+		Assert.assertNotNull(config);
+		Assert.assertNotNull(config.getPlugBoardConfig());
+		Assert.assertFalse(config.getPlugBoardConfig().isEmpty());
+		Assert.assertNotNull(config.getReflectorConfig());
+		Assert.assertNotNull(config.getRotorConfigs());
+		Assert.assertTrue(config.getRotorConfigs().size()>=5 && config.getRotorConfigs().size()<=10 );
+	}
 
 	@Test
 	public void testRotorConfig() {
@@ -40,6 +52,7 @@ public class ConfigGeneratorTest {
 		ConfigGenerator cf = new ConfigGenerator();
 		Map<Byte, Byte> pc = cf.generatePlugBoardConfig();
 		Assert.assertNotNull(pc);
+		Assert.assertTrue(!pc.isEmpty());
 		Assert.assertTrue(pc.size() <= 265 / 2);
 		// non duplicate entires values or keys
 		for (Byte k : pc.keySet()) {

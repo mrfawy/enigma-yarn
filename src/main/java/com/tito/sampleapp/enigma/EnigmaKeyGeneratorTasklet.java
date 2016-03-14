@@ -75,8 +75,7 @@ public class EnigmaKeyGeneratorTasklet extends Tasklet {
 		try {
 			Configuration conf = new Configuration();
 			FileSystem fs = FileSystem.get(conf);
-			Path keyFile = Path.mergePaths(new Path(enigmaTempDir),
-					new Path(Path.SEPARATOR + machineId + ".spec"));
+			Path keyFile = new Path(enigmaTempDir+Path.SEPARATOR + machineId + ".spec");
 			if (fs.exists(keyFile)) {
 				LOG.info("Replacing Key file" + keyFile);
 				fs.delete(keyFile, true);

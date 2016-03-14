@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.tito.enigma.component.Util;
 
 public class ConfigGenerator {
@@ -18,7 +16,7 @@ public class ConfigGenerator {
 	public MachineConfig generateConfiguration(int minRotorCount, int maxRotorCount) {
 		MachineConfig config = new MachineConfig();
 		SecureRandom r = new SecureRandom();
-		int rotorCount = r.nextInt(maxRotorCount) + minRotorCount;
+		int rotorCount = r.nextInt(maxRotorCount-minRotorCount+1) + minRotorCount;
 		List<RotorConfig> rotorConfigs = new ArrayList<>();
 		for (int i = 0; i < rotorCount; i++) {
 			rotorConfigs.add(generateRotorConfig());
@@ -49,11 +47,11 @@ public class ConfigGenerator {
 	protected Map<Byte, Byte> generatePlugBoardConfig() {
 		SecureRandom r = new SecureRandom();
 		int plugBoardConnections = r.nextInt(256 / 2);
-		BiMap<Byte, Byte> plugBoard = HashBiMap.create(plugBoardConnections);
+		Map<Byte, Byte> plugBoard = new HashMap<>();
 		byte[] shuffledValues = Shuffler.getShuffledArray(256);
-		Map<Byte, Byte> valueMap = new HashMap<Byte, Byte>();
 		for (int i = 0; i < plugBoardConnections; i++) {
-			valueMap.put((byte) shuffledValues[i], shuffledValues[i + 1]);			
+			int j = 2 * i;
+			plugBoard.put((byte) shuffledValues[j], shuffledValues[j + 1]);
 		}
 		return plugBoard;
 
@@ -73,11 +71,4 @@ public class ConfigGenerator {
 
 	}
 
-	public static void main(String[] args) {
-		ConfigGenerator cg = new ConfigGenerator();
-		Map<Byte, Byte> m = cg.generatePlugBoardConfig();
-		for (Byte k : m.keySet()) {
-			System.out.println(k + "->" + m.get(k));
-		}
-	}
 }
