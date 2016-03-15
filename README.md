@@ -65,7 +65,7 @@ YARN (Yet Another Resource Negotiator) is Hadoop’s next-generation cluster sched
 
 ##### YARN Architecture
 
-![alt text](http://hortonworks.com/wp-content/uploads/2012/08/YARNArch.png"YARN Architecture")
+![YARN Architecture](http://hortonworks.com/wp-content/uploads/2012/08/YARNArch.png)
 
 YARN has three important pieces: a ResourceManager, a NodeManager, and an ApplicationMaster. In a YARN grid, every machine runs a NodeManager, which is responsible for launching processes on that machine. A ResourceManager talks to all of the NodeManagers to tell them what to run. Applications, in turn, talk to the ResourceManager when they wish to run something on the cluster. The third piece, the ApplicationMaster, is actually application-specific code that runs in the YARN cluster. It’s responsible for managing the application’s workload, asking for containers (usually UNIX processes), and handling notifications when one of its containers fails.
 
@@ -315,7 +315,7 @@ Speaking in modern terms: Modern enigma is a symmetric encryption , stream ciphe
 
 #### Inner workings 
 
-![Engima UML](uml/Engima.png)
+![Enigma UML](uml/Enigma.png)
 
 Encryption typically  has 3 phases:
 
