@@ -179,18 +179,22 @@ That's it , in less than 5 lines of code without dealing with any of the 3 Yarn 
  
 ### Distributed shell
 
-This is the typical  helloworld of Yarn , run a shell command across n containers in the cluster.
+This is the typical  hello world of Yarn , run a shell command across n containers in the cluster.
 
 1. Let's start with our tasklet , first it needs a command to run , to define arguments we implement ``` setpOption``` with the expceted arguments to be passed ( later we will define how to actually pass them via TaskContext )
 
 ```
+
 public void setupOptions(Options options) {
 		options.addOption("command", true, "Shell command to run");
 
 	}
+	
 ```
 
 2. we validate the argument when passed , returning false for error to signal task as failed 
+
+
 ```
 public boolean init(CommandLine cliParser) {
 		if (!cliParser.hasOption("command")) {
@@ -199,48 +203,45 @@ public boolean init(CommandLine cliParser) {
 		}
 		command = cliParser.getOptionValue("command");
 		return true;
-
 	}
+	
 ```
 
 3. Now for application master , we extend ``` ApplicationMaster``` and define the needed arguments , in our case it number of containers and the command to run , then validate them as before 
 
 ```
-@Override
-	public void setupOptions(Options opts) {
-		opts.addOption("n", true, "Number of containers to run the command ");
-		opts.addOption("command", true, "Shell command to run");
-
-	}
-
-	@Override
-	public boolean init(CommandLine cliParser) {
-		if (!cliParser.hasOption("command")) {
-			LOG.error("Missing command");
-			return false;
+		@Override
+		public void setupOptions(Options opts) {
+			opts.addOption("n", true, "Number of containers to run the command ");
+			opts.addOption("command", true, "Shell command to run");
 		}
-		command = cliParser.getOptionValue("command");
-
-		if (cliParser.hasOption("n")) {
-			LOG.error("Missing n");
-			return false;
+		@Override
+		public boolean init(CommandLine cliParser) {
+			if (!cliParser.hasOption("command")) {
+				LOG.error("Missing command");
+				return false;
+			}
+			command = cliParser.getOptionValue("command");
+			if (cliParser.hasOption("n")) {
+				LOG.error("Missing n");
+				return false;
+			}
+			try {
+				n = Integer.parseInt(cliParser.getOptionValue("n"));
+			} catch (NumberFormatException e) {
+				LOG.error("Invalid Number:", e);
+				return false;
+			}
+			return true;
 		}
-		try {
-			n = Integer.parseInt(cliParser.getOptionValue("n"));
-		} catch (NumberFormatException e) {
-			LOG.error("Invalid Number:", e);
-			return false;
-		}
-		return true;
-
-	}
 
 ```
 
 4. Now we can spawn a single  phase with fixed number of tasks (n) and pass the command to them via their taskContext  as follows :
 
 ```
-List<Task> fixedTasks = new ArrayList<>();
+
+		List<Task> fixedTasks = new ArrayList<>();
 		for (int i = 0; i < n; i++) {
 			TaskContext taskContext = new TaskContext(ShellTasklet.class);
 			taskContext.addArg("command", command);
@@ -249,6 +250,7 @@ List<Task> fixedTasks = new ArrayList<>();
 		}
 		Phase phase1 = new Phase("phase 1", new FixedTasksPhaseManager(this, fixedTasks, null));
 		registerPhase(phase1);
+		
 ```
 
 That's it , to run you simply append n,command to the run command explained before and every thing will work as expected . EasyYarn will spawn n containers and run this command on them .
@@ -318,17 +320,21 @@ Note: when Distributed memory service is ready ,HDFS will be replaced by it for 
 - Encrypt command
 
  ``` 
-yarn jar enigma-yarn-app-1.1.0.jar -jar /axp/gcp/cpsetlh/dev/enigma-yarn-app-1.1.0.jar -appMasterClass  com.tito.sampleapp.enigma.EnigmaAppMaster -enigmaCount 3 -enigmaTempDir /axp/gcp/cpsetlh/dev/test/enigma/enigmaTempDir -plainTextPath  /axp/gcp/cpsetlh/dev/test/enigma/plain/plain.txt -cipherTextPath /axp/gcp/cpsetlh/dev/test/enigma/cipher/cipher.text -keyPath /axp/gcp/cpsetlh/dev/test/enigma/EnigmaKey.key  -operation e  ```
+yarn jar enigma-yarn-app-1.1.0.jar -jar /axp/gcp/cpsetlh/dev/enigma-yarn-app-1.1.0.jar -appMasterClass  com.tito.sampleapp.enigma.EnigmaAppMaster -enigmaCount 3 -enigmaTempDir /axp/gcp/cpsetlh/dev/test/enigma/enigmaTempDir -plainTextPath  /axp/gcp/cpsetlh/dev/test/enigma/plain/plain.txt -cipherTextPath /axp/gcp/cpsetlh/dev/test/enigma/cipher/cipher.text -keyPath /axp/gcp/cpsetlh/dev/test/enigma/EnigmaKey.key  -operation e  
+
+  ```
 
 - Decrypt command
 
   ```
+  
 yarn jar enigma-yarn-app-1.1.0.jar -jar /axp/gcp/cpsetlh/dev/enigma-yarn-app-1.1.0.jar -appMasterClass  com.tito.sampleapp.enigma.EnigmaAppMaster -enigmaTempDir /axp/gcp/cpsetlh/dev/test/enigma/enigmaTempDir -plainTextPath  /axp/gcp/cpsetlh/dev/test/enigma/plain/plain_decrypted.txt -cipherTextPath /axp/gcp/cpsetlh/dev/test/enigma/cipher/cipher.text  -keyPath /axp/gcp/cpsetlh/dev/test/enigma/EnigmaKey.key -operation d
 
   ```
 
 
 ###What went wrong with Enigma that led to its fall?
+
 Many Design and operating problems allowed the allied to crack it, just to name a few
 
 * Design
