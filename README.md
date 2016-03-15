@@ -1,4 +1,5 @@
 # Easy Yarn 
+------------------
 
 ## What's Easy Yarn?
 Easy yarn is a framework that abstracts the yarn framework complexity and provide a simpler API allowing developers to focus more on their application logic.
@@ -35,6 +36,8 @@ Easy yarn comes to play to complement the points where Yarn fails short . It pro
 and more ..
 
 ## Comparison with other projects
+-------------------------------------------
+
 ### Spring-Yarn
 Spring yarn handles the lifecycle and allows user to use spring functionalit. Unlike easy yarn it doesn't handle failures nor provides any distributed building blocks like messages passing or synchronization mechanisms. Moreover Spring yarn takes an opinionated decisions which might work at the beginning but won't be flexible enough to customize later. 
 
@@ -55,6 +58,8 @@ Easy yarn doesn't aim to replace or implement MPI standard (~800+ page) on yarn.
   * http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report.pdf
 
 ## Getting Started 
+---------------------------
+
 ### YARN in a nutshell 
 YARN (Yet Another Resource Negotiator) is Hadoop’s next-generation cluster scheduler. It allows you to allocate a number of containers (processes) in a cluster of machines, and execute arbitrary commands on them.
 
@@ -146,10 +151,13 @@ https://github.com/jpatanooga/Metronome/wiki/Debugging-YARN-Applications
 
 
 ## Sample programs 
+---------------------------
+
 ### Helloworld 
 
-This programs spawns a single phase with a single Task that write to the allocated container stdout  
-1. First we define our work unit : 
+This programs spawns a single phase with a single Task that write to the allocated container stdout.
+
+* First we define our work unit : 
 Under the hood it's a java process that will run on an allocated container in the cluster
 
 ``` 
@@ -171,9 +179,9 @@ public class HelloWorldTasklet extends Tasklet{
 
 ```
 
-2. Write HelloWorld App Master to design a single phase with this task , as we know the total number of tasks beforehand  we can use ```FixedTasksPhaseManager``` 
+* Write HelloWorld App Master to design a single phase with this task , as we know the total number of tasks beforehand  we can use ```FixedTasksPhaseManager``` 
 
-3. Package your jar and run as explained in writing tour own apps section 
+* Package your jar and run as explained in writing tour own apps section 
 
 That's it , in less than 5 lines of code without dealing with any of the 3 Yarn protocols!
  
@@ -181,7 +189,7 @@ That's it , in less than 5 lines of code without dealing with any of the 3 Yarn 
 
 This is the typical  hello world of Yarn , run a shell command across n containers in the cluster.
 
-1. Let's start with our tasklet , first it needs a command to run , to define arguments we implement ``` setpOption``` with the expceted arguments to be passed ( later we will define how to actually pass them via TaskContext )
+* Let's start with our tasklet , first it needs a command to run , to define arguments we implement ``` setpOption``` with the expceted arguments to be passed ( later we will define how to actually pass them via TaskContext )
 
 ```
 
@@ -192,7 +200,7 @@ public void setupOptions(Options options) {
 	
 ```
 
-2. we validate the argument when passed , returning false for error to signal task as failed 
+* we validate the argument when passed , returning false for error to signal task as failed 
 
 
 ```
@@ -207,7 +215,7 @@ public boolean init(CommandLine cliParser) {
 	
 ```
 
-3. Now for application master , we extend ``` ApplicationMaster``` and define the needed arguments , in our case it number of containers and the command to run , then validate them as before 
+* Now for application master , we extend ``` ApplicationMaster``` and define the needed arguments , in our case it number of containers and the command to run , then validate them as before 
 
 ```
 		@Override
@@ -237,7 +245,7 @@ public boolean init(CommandLine cliParser) {
 
 ```
 
-4. Now we can spawn a single  phase with fixed number of tasks (n) and pass the command to them via their taskContext  as follows :
+* Now we can spawn a single  phase with fixed number of tasks (n) and pass the command to them via their taskContext  as follows :
 
 ```
 
@@ -264,7 +272,7 @@ Note that everything we wrote is directly application specific logic. no boilerp
 
 
 #Modern Enigma
->"If a trick is overused, it's less likely that anyone will expect us to use it again” 
+>"If a trick is over used, it's less likely that anyone will expect us to use it again” 
 
 Previous Samples showed the basic steps to develop yarn app , we'll build on these concepts and develop a moderately complex app with more than one phase.Modern Enigma is a sample program that shows you what a typical application you write will look like. 
 
@@ -274,8 +282,10 @@ Here we'll briefly explain what's modern enigma and how this distributed app is 
 
 Note: This work is based on my other project ModernEngima ,you can find it here :
 https://github.com/mrfawy/ModernEnigma
+
 #### Introduction
->"If a trick is overused, it's less likely that anyone will expect us to use it again” 
+
+>"If a trick is over used, it's less likely that anyone will expect us to use it again” 
 
 The above motto is a quote from a comic movie, and hence this fun project came into existence, it aims to revive the famous (ehm, for being cracked) Enigma machine .But why bother? 
 
@@ -285,7 +295,7 @@ Alan Turing is considered to be the father of modern computing, at his time elec
 
 >Modern Enigma is not patented and will never be.. myself
 
-###What's Enigma?
+#### What's Enigma?
 
 Before we start , Please check this video to see an enigma explained with the mathematics behind it 
 
@@ -333,7 +343,7 @@ yarn jar enigma-yarn-app-1.1.0.jar -jar /axp/gcp/cpsetlh/dev/enigma-yarn-app-1.1
   ```
 
 
-###What went wrong with Enigma that led to its fall?
+#### What went wrong with Enigma that led to its fall?
 
 Many Design and operating problems allowed the allied to crack it, just to name a few
 
@@ -352,7 +362,7 @@ Many Design and operating problems allowed the allied to crack it, just to name 
     * Weakness points in enigma, [more info](http://cromwell-intl.com/security/history/enigma.html "for more info")
     * SIGABA working, [more info](http://ucsb.curby.net/broadcast/thesis/thesis.pdf)
 
-###Modern Enigma Features:
+#### Modern Enigma Features:
 * It's a protocol that can be implemented by many environments; currently we provide yarn java code as the reference implementation 
 * Dynamic configuration of the machine, thus no single machine with fixed wiring that can be reverse engineered 
 * A new random settings and  a new set of machines per message 
@@ -362,10 +372,14 @@ Many Design and operating problems allowed the allied to crack it, just to name 
 * Multilevel Encryption each consists of various rounds(in progress)
 * After all, it's just software, just some lines of code , no hardware to carry ;)
 
-### Basic Concepts 
+#### Basic Concepts 
 You need to understand some components to understand how a machine works
 Here is an overview of the main components of a machine
+
+
 ![Main components](https://github.com/mrfawy/ModernEnigma/blob/master/documentation/diagrams/main%20components.jpg)
+
+
 ####Rotor
 A rotor is a like a switch, historically, rotor was a cylinder with internal wrings; depending on the wiring each input signal will be mapped to some output pin. In modern terms a set of rotors works as a substitution box. It rotates meaning each new position (offset) can result to a different output for the same pin.
 As rotor rotates (stepping), different output can result for same input
@@ -382,11 +396,12 @@ A plug board is like a Reflector, but you can arbitrarily configure the wiring p
 It’s here just for historical reasons, but files, byte streams will be used instead
 
 ####Inside a machine 
-for the image below please follow numbers to get an idea about how signal is propagated into different machine modules during operation
+Please follow numbers in the image below to get an idea about how signal is propagated into different machine modules during operation
+
 ![Main signal path](https://github.com/mrfawy/ModernEnigma/blob/master/documentation/diagrams/signalPath.jpg)
 
 
-### How secure Is Modern Enigma?
+#### How secure Is Modern Enigma?
 >Any person can invent a security system so clever that he or she can't imagine a way of breaking it...Schneider’s Law
 
 It means that people create a cipher that they themselves can't break, and then use that as evidence they've created an unbreakable cipher.
@@ -398,9 +413,10 @@ We tried to fix the original Machine problems , provided a new protocol with dif
 
 So the right question should be is it secure enough for your needs ? You decide,we are still investigating the weaknesses points of this tool.For sure this not to be used in any mission critical app.
 
-##### Any help from an expert on the security assessment or cryptoanalysis of this Modern Enigma is highly appreciated; it’s still in early development phase.
+###### Any help from an expert on the security assessment or cryptoanalysis of this Modern Enigma is highly appreciated; it’s still in early development phase.
 
-###Mathematics of Modern Enigma:
+#### Mathematics of Modern Enigma:
+
 Security can be largely affected by a key size  and available states the machine can take (key space ) , here we show how you can calculate key space for sample machine:
 
 * Counting Equations:
@@ -438,10 +454,10 @@ Security can be largely affected by a key size  and available states the machine
 
 * it's worth mentioning here that the key is part of the operating instructions, it's like the manual for the algorithm , Thus it'll be a large number of bits.
 
-####Please don't let the large key size fool you. it works for brute force attacks , any help from an expert is appreciated
+##### Please don't let the large key size fool you. it works for brute force attacks , any help from an expert is appreciated
 
 
-###Modern Enigma Protocol :
+#### Modern Enigma Protocol :
 * General Guideline:
     * In this protocol we define a certain steps that has to be performed, for each step a certain algorithm will be chosen. As each step has it's own attack vectors and it's algorithm has it's vulnerabilities, each major version of this protocol will try to cope with that .Backward compatibility is not currently one of our main design goals.
 * Main design Goals :
@@ -460,7 +476,6 @@ Security can be largely affected by a key size  and available states the machine
     * Key management/sharing process is not handled , use any key management technique you desire.
             
 Because the keys and machine descriptions are human readable, old tricks can still work(remember our Motto) .Be creative and use overused techniques like calling your friend by phone and telling him part of the key ,SMS another part , Facebook another part, and if you are not in a hurry you can send a postal mail ;).of course all of theses platform might be tracked (well ,you know it's ).If the attacker was able to track all of these communications ,well, I think this guy  deserves to read your messages any way, nothing can help you my friend ;)
-
 
 
 
