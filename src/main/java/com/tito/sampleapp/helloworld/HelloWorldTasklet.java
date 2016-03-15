@@ -13,8 +13,7 @@ public class HelloWorldTasklet extends Tasklet{
 	}
 
 	@Override
-	public void setupOptions(Options opts) {
-		// TODO Auto-generated method stub
+	public void setupOptions(Options opts) {	
 		
 	}
 
