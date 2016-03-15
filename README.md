@@ -315,7 +315,7 @@ Speaking in modern terms: Modern enigma is a symmetric encryption , stream ciphe
 
 #### Inner workings 
 
-![Enigma UML](uml/Enigma.png)
+![Enigma UML](uml/enigma.png)
 
 Encryption typically  has 3 phases:
 
