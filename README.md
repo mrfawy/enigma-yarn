@@ -76,6 +76,9 @@ YARN has three important pieces: a ResourceManager, a NodeManager, and an Applic
 ### Easy Yarn in a nutshell
 
 #### Core Easy Yarn
+
+![Easy yarn UML](uml/easy yarn uml.png)
+
 - Client : Submit application to YARN and allocate and run application master
 - ApplicationMaster: Manage life cycle and works closely with YARN to allocate more containers according to phase's tasks
 - Task : a metadata for a work unit , it has Id and launch context 
@@ -183,6 +186,8 @@ public class HelloWorldTasklet extends Tasklet{
 
 * Package your jar and run as explained in writing tour own apps section 
 
+![Helloworld  UML](uml/helloworld.png)
+
 That's it , in less than 5 lines of code without dealing with any of the 3 Yarn protocols!
  
 ### Distributed shell
@@ -271,7 +276,7 @@ Note that everything we wrote is directly application specific logic. no boilerp
   * https://github.com/apache/hadoop-common/tree/trunk/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-applications-distributedshell
 
 
-#Modern Enigma
+###Modern Enigma
 >"If a trick is over used, it's less likely that anyone will expect us to use it again” 
 
 Previous Samples showed the basic steps to develop yarn app , we'll build on these concepts and develop a moderately complex app with more than one phase.Modern Enigma is a sample program that shows you what a typical application you write will look like. 
@@ -310,6 +315,8 @@ Speaking in modern terms: Modern enigma is a symmetric encryption , stream ciphe
 
 #### Inner workings 
 
+![Engima UML](uml/Engima.png)
+
 Encryption typically  has 3 phases:
 
 * Generate new key ( could be skipped to use a previous key , not recommended though)
@@ -325,6 +332,7 @@ Decryption has 2 phases:
 
 * A given workDir is used on HDFS to generate temp machine specs and streams.
 Note: when Distributed memory service is ready ,HDFS will be replaced by it for faster processing.
+
 #### Sample usage
 
 - Encrypt command
@@ -372,7 +380,9 @@ Many Design and operating problems allowed the allied to crack it, just to name 
 * Multilevel Encryption each consists of various rounds(in progress)
 * After all, it's just software, just some lines of code , no hardware to carry ;)
 
-#### Basic Concepts 
+#### Basic Concepts
+----------------------- 
+ 
 You need to understand some components to understand how a machine works
 Here is an overview of the main components of a machine
 
@@ -380,22 +390,22 @@ Here is an overview of the main components of a machine
 ![Main components](https://github.com/mrfawy/ModernEnigma/blob/master/documentation/diagrams/main%20components.jpg)
 
 
-####Rotor
+#### Rotor
 A rotor is a like a switch, historically, rotor was a cylinder with internal wrings; depending on the wiring each input signal will be mapped to some output pin. In modern terms a set of rotors works as a substitution box. It rotates meaning each new position (offset) can result to a different output for the same pin.
 As rotor rotates (stepping), different output can result for same input
 
 ![Rotor stepping](https://github.com/mrfawy/ModernEnigma/blob/master/documentation/diagrams/rotor%20stepping.jpg)
 
-####Reflector
+#### Reflector
 Reflector is like a rotor but it doesn't move and the wiring has a certain rule that it can wire to same pin or reflect the wiring A->X THEN X->A
 
-####Plug Board
+#### Plug Board
 A plug board is like a Reflector, but you can arbitrarily configure the wiring per as you need per setting 
 
-####Keyboard and screen
+#### Keyboard and screen
 It’s here just for historical reasons, but files, byte streams will be used instead
 
-####Inside a machine 
+#### Inside a machine 
 Please follow numbers in the image below to get an idea about how signal is propagated into different machine modules during operation
 
 ![Main signal path](https://github.com/mrfawy/ModernEnigma/blob/master/documentation/diagrams/signalPath.jpg)
