@@ -47,8 +47,9 @@ public class StreamPhaseManager extends PhaseManager {
 
 	@Override
 	public void defineTasks() {
-		if (enigmaKey == null) {
-			enigmaKey = EnigmaKeyUtil.loadKey(keyPath);
+		if(enigmaKey==null){			
+			LOG.error("Failed to load Enigma key");
+			throw new RuntimeException("Failed to load Enigma key");
 		}
 		for (String machineId : enigmaKey.getMachineOrder()) {
 			TaskContext taskContext = new TaskContext(EnigmaStreamGeneratorTasklet.class);

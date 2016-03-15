@@ -184,6 +184,21 @@ public class HelloWorldTasklet extends Tasklet{
 
 * Write HelloWorld App Master to design a single phase with this task , as we know the total number of tasks beforehand  we can use ```FixedTasksPhaseManager``` 
 
+```
+
+	@Override
+	protected void registerPhases() {
+
+		Task t = new Task("task", new TaskContext(HelloWorldTasklet.class));
+		List<Task> fixedTasks = new ArrayList<>();
+		fixedTasks.add(t);
+		Phase phase1 = new Phase("phase 1", new FixedTasksPhaseManager(this, fixedTasks, null));
+		registerPhase(phase1);
+
+	}
+
+```
+
 * Package your jar and run as explained in writing tour own apps section 
 
 ![Helloworld  UML](uml/helloworld.png)

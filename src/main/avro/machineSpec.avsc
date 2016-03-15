@@ -1,0 +1,55 @@
+{
+  "namespace": "com.tito.enigma.avro",
+  "name": "MachineConfig",
+  "type": "record",
+  "fields": [
+    {
+      "name": "reflectorConfig",
+      "type": "bytes"
+    },
+    {
+      "name": "plugBaordWiring",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "wiringPair",
+          "type": "record",
+          "fields": [
+            {
+              "name": "from",
+              "type": "int"
+            },
+            {
+              "name": "to",
+              "type": "int"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "rotorConfigs",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "rotorConfig",
+          "type": "record",
+          "fields": [
+            {
+              "name": "map",
+              "type": "bytes"
+            },
+            {
+              "name": "notchSet",
+              "type": "bytes"
+            },
+            {
+              "name": "offset",
+              "type": "int"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "namespace": "com.tito.enigma.avro",
+  "type": "record",
+  "name": "EnigmaKey",
+  "fields": [
+    {
+      "name": "machineOrder",
+      "type": {
+        "type": "array",
+        "items": "string"
+      }
+    },
+    {
+      "name": "machineConfig",
+      "type": {
+        "type": "map",
+        "values": "com.tito.enigma.avro.MachineConfig"
+      }
+    }
+  ]
+}

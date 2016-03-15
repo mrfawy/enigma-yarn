@@ -8,6 +8,9 @@ public class MachineConfig {
 	List<RotorConfig> rotorConfigs;
 	byte[] reflectorConfig;
 	Map<Byte, Byte> plugBoardConfig;
+	
+	//avro 
+	List<WiringPair> plugBaordWiring;
 
 	public List<RotorConfig> getRotorConfigs() {
 		return rotorConfigs;
