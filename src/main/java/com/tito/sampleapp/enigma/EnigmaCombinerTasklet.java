@@ -3,7 +3,6 @@ package com.tito.sampleapp.enigma;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -16,8 +15,8 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tito.easyyarn.task.Tasklet;
+import com.tito.enigma.component.EnigmaKeyUtil;
 import com.tito.enigma.config.EnigmaKey;
 import com.tito.enigma.stream.StreamCombiner;
 
@@ -38,6 +37,8 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	List<String> machineSequence;
 	List<FSDataInputStream> machineStreamList;
+
+	private EnigmaKey key;
 
 	@Override
 	public boolean init(CommandLine commandLine) {
@@ -64,9 +65,9 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			return false;
 		}
 		outputPath = commandLine.getOptionValue("outputPath");
-		
-		if (commandLine.hasOption("reversed")&&commandLine.getOptionValue("reversed").equalsIgnoreCase("true")) {
-			isReversed=true;			
+
+		if (commandLine.hasOption("reversed") && commandLine.getOptionValue("reversed").equalsIgnoreCase("true")) {
+			isReversed = true;
 		}
 		return true;
 	}
@@ -83,8 +84,14 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	@Override
 	public boolean start() {
-		machineSequence = getMachineSequence();
+		key = EnigmaKeyUtil.loadKey(keyPath);
+		if (key == null) {
+			LOG.error("Failed to load Enigma Key.");
+			return false;
+		}
+		machineSequence = key.getMachineOrder();
 		if (machineSequence == null) {
+			LOG.error("Missing machine order, invalid key.");
 			return false;
 		}
 		machineStreamList = getMachineStreams(machineSequence);
@@ -105,7 +112,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	private boolean processStreams() throws IOException {
 		LOG.info("Starting processStreams");
-		if(isReversed){
+		if (isReversed) {
 			LOG.info("Processing Stream reversed");
 		}
 		FSDataInputStream inputStream = null;
@@ -129,9 +136,9 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			outputStream = fs.create(outputFile);
 			ByteBuffer inputBuffer = ByteBuffer.allocate(INPUT_BUFFER_SIZE);
 			int read;
-			while ((read = inputStream.read(inputBuffer)) != -1) {				
+			while ((read = inputStream.read(inputBuffer)) != -1) {
 				List<ByteBuffer> mapping = readStreamMapping(machineStreamList);
-				ByteBuffer outputBuffer = streamCombiner.combine(inputBuffer, mapping,isReversed);
+				ByteBuffer outputBuffer = streamCombiner.combine(inputBuffer, mapping, isReversed);
 				outputBuffer.flip();
 				byte[] data = new byte[outputBuffer.limit()];
 				outputBuffer.get(data);
@@ -190,26 +197,6 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			}
 			LOG.info("Opened machineStreamList of size:" + machineStreamList.size());
 			return machineStreamList;
-		} catch (Exception ex) {
-			LOG.error("Error={}", ex);
-			return null;
-		}
-	}
-
-	private List<String> getMachineSequence() {
-		try {
-			Configuration conf = new Configuration();
-			FileSystem fs = FileSystem.get(conf);
-			Path keyFile = new Path(keyPath);
-			if (!fs.exists(keyFile)) {
-				LOG.error("Key Not found :" + keyFile);
-				throw new RuntimeException("Key Not found :" + keyFile);
-			}
-			FSDataInputStream fin = fs.open(keyFile);
-			String keyJson = fin.readUTF();
-			EnigmaKey key = new ObjectMapper().readValue(keyJson, EnigmaKey.class);
-			LOG.info("Initial Machine Order:" + Arrays.toString(key.getMachineOrder().toArray()));
-			return key.getMachineOrder();
 		} catch (Exception ex) {
 			LOG.error("Error={}", ex);
 			return null;
