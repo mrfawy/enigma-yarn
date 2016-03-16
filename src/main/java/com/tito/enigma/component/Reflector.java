@@ -1,10 +1,13 @@
 package com.tito.enigma.component;
 
+import java.nio.ByteBuffer;
+
 public class Reflector implements Switch {
 	byte[] map;
 
-	public Reflector(byte[] config) {
-		this.map = config;
+	public Reflector(ByteBuffer config) {		
+		this.map = Util.toArray(config);
+		
 	}
 
 	@Override

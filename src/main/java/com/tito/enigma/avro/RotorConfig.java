@@ -6,9 +6,9 @@
 package com.tito.enigma.avro;  
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
-public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -1141984474084113737L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"rotorConfig\",\"namespace\":\"com.tito.enigma.avro\",\"fields\":[{\"name\":\"map\",\"type\":\"bytes\"},{\"name\":\"notchSet\",\"type\":\"bytes\"},{\"name\":\"offset\",\"type\":\"int\"}]}");
+public class RotorConfig extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
+  private static final long serialVersionUID = 1828127895131705335L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"RotorConfig\",\"namespace\":\"com.tito.enigma.avro\",\"fields\":[{\"name\":\"map\",\"type\":\"bytes\"},{\"name\":\"notchSet\",\"type\":\"bytes\"},{\"name\":\"offset\",\"type\":\"int\"}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
   @Deprecated public java.nio.ByteBuffer map;
   @Deprecated public java.nio.ByteBuffer notchSet;
@@ -19,12 +19,12 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
    * to their default values from the schema.  If that is desired then
    * one should use <code>newBuilder()</code>. 
    */
-  public rotorConfig() {}
+  public RotorConfig() {}
 
   /**
    * All-args constructor.
    */
-  public rotorConfig(java.nio.ByteBuffer map, java.nio.ByteBuffer notchSet, java.lang.Integer offset) {
+  public RotorConfig(java.nio.ByteBuffer map, java.nio.ByteBuffer notchSet, java.lang.Integer offset) {
     this.map = map;
     this.notchSet = notchSet;
     this.offset = offset;
@@ -97,36 +97,36 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
   }
 
   /**
-   * Creates a new rotorConfig RecordBuilder.
-   * @return A new rotorConfig RecordBuilder
+   * Creates a new RotorConfig RecordBuilder.
+   * @return A new RotorConfig RecordBuilder
    */
-  public static com.tito.enigma.avro.rotorConfig.Builder newBuilder() {
-    return new com.tito.enigma.avro.rotorConfig.Builder();
+  public static com.tito.enigma.avro.RotorConfig.Builder newBuilder() {
+    return new com.tito.enigma.avro.RotorConfig.Builder();
   }
   
   /**
-   * Creates a new rotorConfig RecordBuilder by copying an existing Builder.
+   * Creates a new RotorConfig RecordBuilder by copying an existing Builder.
    * @param other The existing builder to copy.
-   * @return A new rotorConfig RecordBuilder
+   * @return A new RotorConfig RecordBuilder
    */
-  public static com.tito.enigma.avro.rotorConfig.Builder newBuilder(com.tito.enigma.avro.rotorConfig.Builder other) {
-    return new com.tito.enigma.avro.rotorConfig.Builder(other);
+  public static com.tito.enigma.avro.RotorConfig.Builder newBuilder(com.tito.enigma.avro.RotorConfig.Builder other) {
+    return new com.tito.enigma.avro.RotorConfig.Builder(other);
   }
   
   /**
-   * Creates a new rotorConfig RecordBuilder by copying an existing rotorConfig instance.
+   * Creates a new RotorConfig RecordBuilder by copying an existing RotorConfig instance.
    * @param other The existing instance to copy.
-   * @return A new rotorConfig RecordBuilder
+   * @return A new RotorConfig RecordBuilder
    */
-  public static com.tito.enigma.avro.rotorConfig.Builder newBuilder(com.tito.enigma.avro.rotorConfig other) {
-    return new com.tito.enigma.avro.rotorConfig.Builder(other);
+  public static com.tito.enigma.avro.RotorConfig.Builder newBuilder(com.tito.enigma.avro.RotorConfig other) {
+    return new com.tito.enigma.avro.RotorConfig.Builder(other);
   }
   
   /**
-   * RecordBuilder for rotorConfig instances.
+   * RecordBuilder for RotorConfig instances.
    */
-  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<rotorConfig>
-    implements org.apache.avro.data.RecordBuilder<rotorConfig> {
+  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<RotorConfig>
+    implements org.apache.avro.data.RecordBuilder<RotorConfig> {
 
     private java.nio.ByteBuffer map;
     private java.nio.ByteBuffer notchSet;
@@ -134,14 +134,14 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
 
     /** Creates a new Builder */
     private Builder() {
-      super(com.tito.enigma.avro.rotorConfig.SCHEMA$);
+      super(com.tito.enigma.avro.RotorConfig.SCHEMA$);
     }
     
     /**
      * Creates a Builder by copying an existing Builder.
      * @param other The existing Builder to copy.
      */
-    private Builder(com.tito.enigma.avro.rotorConfig.Builder other) {
+    private Builder(com.tito.enigma.avro.RotorConfig.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.map)) {
         this.map = data().deepCopy(fields()[0].schema(), other.map);
@@ -158,11 +158,11 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
     }
     
     /**
-     * Creates a Builder by copying an existing rotorConfig instance
+     * Creates a Builder by copying an existing RotorConfig instance
      * @param other The existing instance to copy.
      */
-    private Builder(com.tito.enigma.avro.rotorConfig other) {
-            super(com.tito.enigma.avro.rotorConfig.SCHEMA$);
+    private Builder(com.tito.enigma.avro.RotorConfig other) {
+            super(com.tito.enigma.avro.RotorConfig.SCHEMA$);
       if (isValidValue(fields()[0], other.map)) {
         this.map = data().deepCopy(fields()[0].schema(), other.map);
         fieldSetFlags()[0] = true;
@@ -190,7 +190,7 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
       * @param value The value of 'map'.
       * @return This builder.
       */
-    public com.tito.enigma.avro.rotorConfig.Builder setMap(java.nio.ByteBuffer value) {
+    public com.tito.enigma.avro.RotorConfig.Builder setMap(java.nio.ByteBuffer value) {
       validate(fields()[0], value);
       this.map = value;
       fieldSetFlags()[0] = true;
@@ -210,7 +210,7 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
       * Clears the value of the 'map' field.
       * @return This builder.
       */
-    public com.tito.enigma.avro.rotorConfig.Builder clearMap() {
+    public com.tito.enigma.avro.RotorConfig.Builder clearMap() {
       map = null;
       fieldSetFlags()[0] = false;
       return this;
@@ -229,7 +229,7 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
       * @param value The value of 'notchSet'.
       * @return This builder.
       */
-    public com.tito.enigma.avro.rotorConfig.Builder setNotchSet(java.nio.ByteBuffer value) {
+    public com.tito.enigma.avro.RotorConfig.Builder setNotchSet(java.nio.ByteBuffer value) {
       validate(fields()[1], value);
       this.notchSet = value;
       fieldSetFlags()[1] = true;
@@ -249,7 +249,7 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
       * Clears the value of the 'notchSet' field.
       * @return This builder.
       */
-    public com.tito.enigma.avro.rotorConfig.Builder clearNotchSet() {
+    public com.tito.enigma.avro.RotorConfig.Builder clearNotchSet() {
       notchSet = null;
       fieldSetFlags()[1] = false;
       return this;
@@ -268,7 +268,7 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
       * @param value The value of 'offset'.
       * @return This builder.
       */
-    public com.tito.enigma.avro.rotorConfig.Builder setOffset(int value) {
+    public com.tito.enigma.avro.RotorConfig.Builder setOffset(int value) {
       validate(fields()[2], value);
       this.offset = value;
       fieldSetFlags()[2] = true;
@@ -288,15 +288,15 @@ public class rotorConfig extends org.apache.avro.specific.SpecificRecordBase imp
       * Clears the value of the 'offset' field.
       * @return This builder.
       */
-    public com.tito.enigma.avro.rotorConfig.Builder clearOffset() {
+    public com.tito.enigma.avro.RotorConfig.Builder clearOffset() {
       fieldSetFlags()[2] = false;
       return this;
     }
 
     @Override
-    public rotorConfig build() {
+    public RotorConfig build() {
       try {
-        rotorConfig record = new rotorConfig();
+        RotorConfig record = new RotorConfig();
         record.map = fieldSetFlags()[0] ? this.map : (java.nio.ByteBuffer) defaultValue(fields()[0]);
         record.notchSet = fieldSetFlags()[1] ? this.notchSet : (java.nio.ByteBuffer) defaultValue(fields()[1]);
         record.offset = fieldSetFlags()[2] ? this.offset : (java.lang.Integer) defaultValue(fields()[2]);

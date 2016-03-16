@@ -16,8 +16,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.tito.easyyarn.task.Tasklet;
+import com.tito.enigma.avro.EnigmaKey;
 import com.tito.enigma.component.EnigmaKeyUtil;
-import com.tito.enigma.config.EnigmaKey;
 import com.tito.enigma.stream.StreamCombiner;
 
 public class EnigmaCombinerTasklet extends Tasklet {
@@ -35,7 +35,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	private StreamCombiner streamCombiner;
 
-	List<String> machineSequence;
+	List<CharSequence> machineSequence;
 	List<FSDataInputStream> machineStreamList;
 
 	private EnigmaKey key;
@@ -101,13 +101,13 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 		try {
 			streamCombiner = new StreamCombiner();
-			processStreams();
+			return processStreams();
 		} catch (IOException e) {
 			LOG.error("FAILED TO PROCESS STREAMS", e);
 			return false;
 		}
 
-		return true;
+		
 	}
 
 	private boolean processStreams() throws IOException {
@@ -180,12 +180,12 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	}
 
-	private List<FSDataInputStream> getMachineStreams(List<String> machineSequence) {
+	private List<FSDataInputStream> getMachineStreams(List<CharSequence> machineSequence) {
 		try {
 			List<FSDataInputStream> machineStreamList = new ArrayList<>();
 			Configuration conf = new Configuration();
 			FileSystem fs = FileSystem.get(conf);
-			for (String machineId : machineSequence) {
+			for (CharSequence machineId : machineSequence) {
 				Path streamFile = Path.mergePaths(new Path(enigmaTempDir),
 						new Path(Path.SEPARATOR + machineId + ".stream"));
 				if (!fs.exists(streamFile)) {

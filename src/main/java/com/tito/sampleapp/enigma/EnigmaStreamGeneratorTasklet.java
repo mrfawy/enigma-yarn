@@ -13,9 +13,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.tito.easyyarn.task.Tasklet;
+import com.tito.enigma.avro.EnigmaKey;
+import com.tito.enigma.avro.MachineConfig;
 import com.tito.enigma.component.EnigmaKeyUtil;
-import com.tito.enigma.config.EnigmaKey;
-import com.tito.enigma.config.MachineConfig;
 import com.tito.enigma.stream.StreamGenerator;
 
 public class EnigmaStreamGeneratorTasklet extends Tasklet {

@@ -6,9 +6,9 @@
 package com.tito.enigma.avro;  
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
-public class wiringPair extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 4467469212542146939L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"wiringPair\",\"namespace\":\"com.tito.enigma.avro\",\"fields\":[{\"name\":\"from\",\"type\":\"int\"},{\"name\":\"to\",\"type\":\"int\"}]}");
+public class WiringPair extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
+  private static final long serialVersionUID = -7098482968791757229L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"WiringPair\",\"namespace\":\"com.tito.enigma.avro\",\"fields\":[{\"name\":\"from\",\"type\":\"int\"},{\"name\":\"to\",\"type\":\"int\"}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
   @Deprecated public int from;
   @Deprecated public int to;
@@ -18,12 +18,12 @@ public class wiringPair extends org.apache.avro.specific.SpecificRecordBase impl
    * to their default values from the schema.  If that is desired then
    * one should use <code>newBuilder()</code>. 
    */
-  public wiringPair() {}
+  public WiringPair() {}
 
   /**
    * All-args constructor.
    */
-  public wiringPair(java.lang.Integer from, java.lang.Integer to) {
+  public WiringPair(java.lang.Integer from, java.lang.Integer to) {
     this.from = from;
     this.to = to;
   }
@@ -78,50 +78,50 @@ public class wiringPair extends org.apache.avro.specific.SpecificRecordBase impl
   }
 
   /**
-   * Creates a new wiringPair RecordBuilder.
-   * @return A new wiringPair RecordBuilder
+   * Creates a new WiringPair RecordBuilder.
+   * @return A new WiringPair RecordBuilder
    */
-  public static com.tito.enigma.avro.wiringPair.Builder newBuilder() {
-    return new com.tito.enigma.avro.wiringPair.Builder();
+  public static com.tito.enigma.avro.WiringPair.Builder newBuilder() {
+    return new com.tito.enigma.avro.WiringPair.Builder();
   }
   
   /**
-   * Creates a new wiringPair RecordBuilder by copying an existing Builder.
+   * Creates a new WiringPair RecordBuilder by copying an existing Builder.
    * @param other The existing builder to copy.
-   * @return A new wiringPair RecordBuilder
+   * @return A new WiringPair RecordBuilder
    */
-  public static com.tito.enigma.avro.wiringPair.Builder newBuilder(com.tito.enigma.avro.wiringPair.Builder other) {
-    return new com.tito.enigma.avro.wiringPair.Builder(other);
+  public static com.tito.enigma.avro.WiringPair.Builder newBuilder(com.tito.enigma.avro.WiringPair.Builder other) {
+    return new com.tito.enigma.avro.WiringPair.Builder(other);
   }
   
   /**
-   * Creates a new wiringPair RecordBuilder by copying an existing wiringPair instance.
+   * Creates a new WiringPair RecordBuilder by copying an existing WiringPair instance.
    * @param other The existing instance to copy.
-   * @return A new wiringPair RecordBuilder
+   * @return A new WiringPair RecordBuilder
    */
-  public static com.tito.enigma.avro.wiringPair.Builder newBuilder(com.tito.enigma.avro.wiringPair other) {
-    return new com.tito.enigma.avro.wiringPair.Builder(other);
+  public static com.tito.enigma.avro.WiringPair.Builder newBuilder(com.tito.enigma.avro.WiringPair other) {
+    return new com.tito.enigma.avro.WiringPair.Builder(other);
   }
   
   /**
-   * RecordBuilder for wiringPair instances.
+   * RecordBuilder for WiringPair instances.
    */
-  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<wiringPair>
-    implements org.apache.avro.data.RecordBuilder<wiringPair> {
+  public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<WiringPair>
+    implements org.apache.avro.data.RecordBuilder<WiringPair> {
 
     private int from;
     private int to;
 
     /** Creates a new Builder */
     private Builder() {
-      super(com.tito.enigma.avro.wiringPair.SCHEMA$);
+      super(com.tito.enigma.avro.WiringPair.SCHEMA$);
     }
     
     /**
      * Creates a Builder by copying an existing Builder.
      * @param other The existing Builder to copy.
      */
-    private Builder(com.tito.enigma.avro.wiringPair.Builder other) {
+    private Builder(com.tito.enigma.avro.WiringPair.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.from)) {
         this.from = data().deepCopy(fields()[0].schema(), other.from);
@@ -134,11 +134,11 @@ public class wiringPair extends org.apache.avro.specific.SpecificRecordBase impl
     }
     
     /**
-     * Creates a Builder by copying an existing wiringPair instance
+     * Creates a Builder by copying an existing WiringPair instance
      * @param other The existing instance to copy.
      */
-    private Builder(com.tito.enigma.avro.wiringPair other) {
-            super(com.tito.enigma.avro.wiringPair.SCHEMA$);
+    private Builder(com.tito.enigma.avro.WiringPair other) {
+            super(com.tito.enigma.avro.WiringPair.SCHEMA$);
       if (isValidValue(fields()[0], other.from)) {
         this.from = data().deepCopy(fields()[0].schema(), other.from);
         fieldSetFlags()[0] = true;
@@ -162,7 +162,7 @@ public class wiringPair extends org.apache.avro.specific.SpecificRecordBase impl
       * @param value The value of 'from'.
       * @return This builder.
       */
-    public com.tito.enigma.avro.wiringPair.Builder setFrom(int value) {
+    public com.tito.enigma.avro.WiringPair.Builder setFrom(int value) {
       validate(fields()[0], value);
       this.from = value;
       fieldSetFlags()[0] = true;
@@ -182,7 +182,7 @@ public class wiringPair extends org.apache.avro.specific.SpecificRecordBase impl
       * Clears the value of the 'from' field.
       * @return This builder.
       */
-    public com.tito.enigma.avro.wiringPair.Builder clearFrom() {
+    public com.tito.enigma.avro.WiringPair.Builder clearFrom() {
       fieldSetFlags()[0] = false;
       return this;
     }
@@ -200,7 +200,7 @@ public class wiringPair extends org.apache.avro.specific.SpecificRecordBase impl
       * @param value The value of 'to'.
       * @return This builder.
       */
-    public com.tito.enigma.avro.wiringPair.Builder setTo(int value) {
+    public com.tito.enigma.avro.WiringPair.Builder setTo(int value) {
       validate(fields()[1], value);
       this.to = value;
       fieldSetFlags()[1] = true;
@@ -220,15 +220,15 @@ public class wiringPair extends org.apache.avro.specific.SpecificRecordBase impl
       * Clears the value of the 'to' field.
       * @return This builder.
       */
-    public com.tito.enigma.avro.wiringPair.Builder clearTo() {
+    public com.tito.enigma.avro.WiringPair.Builder clearTo() {
       fieldSetFlags()[1] = false;
       return this;
     }
 
     @Override
-    public wiringPair build() {
+    public WiringPair build() {
       try {
-        wiringPair record = new wiringPair();
+        WiringPair record = new WiringPair();
         record.from = fieldSetFlags()[0] ? this.from : (java.lang.Integer) defaultValue(fields()[0]);
         record.to = fieldSetFlags()[1] ? this.to : (java.lang.Integer) defaultValue(fields()[1]);
         return record;

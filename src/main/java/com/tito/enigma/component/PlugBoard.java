@@ -1,18 +1,21 @@
 package com.tito.enigma.component;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.HashBiMap;
+import com.tito.enigma.avro.WiringPair;
 
 public class PlugBoard implements Switch {
 
 	Map<Byte, Byte> map;
 
-	public PlugBoard(Map<Byte, Byte> plugBoardConfig) {
-		map = HashBiMap.create(plugBoardConfig.size());
-		for (Byte k : plugBoardConfig.keySet()) {
-			map.put(k, plugBoardConfig.get(k));
-			map.put(plugBoardConfig.get(k), k);
+	public PlugBoard(List<WiringPair> WiringList) {
+		map = new HashMap<>();
+		for (WiringPair pair : WiringList) {
+			map.put(pair.getFrom().byteValue(), pair.getTo().byteValue());
+			map.put(pair.getTo().byteValue(), pair.getFrom().byteValue());
 		}
 	}
 
@@ -23,7 +26,7 @@ public class PlugBoard implements Switch {
 			if (map.containsKey(in[i])) {
 				result[i] = map.get(in[i]);
 			} else {
-				result[i] = (byte)in[i];
+				result[i] = (byte) in[i];
 			}
 		}
 		return result;

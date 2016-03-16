@@ -9,18 +9,15 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tito.easyyarn.appmaster.ApplicationMaster;
 import com.tito.easyyarn.phase.FixedTasksPhaseManager;
 import com.tito.easyyarn.phase.Phase;
 import com.tito.easyyarn.task.Task;
 import com.tito.easyyarn.task.TaskContext;
-import com.tito.enigma.config.EnigmaKey;
 
 public class EnigmaAppMaster extends ApplicationMaster {
 	private static final Log LOG = LogFactory.getLog(EnigmaAppMaster.class);
@@ -33,7 +30,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 	private boolean isEncrypt;
 	private boolean skipKeyGeneration;
 
-	private List<String> machineIdList = new ArrayList<>();
+	private List<CharSequence> machineIdList = new ArrayList<>();
 
 	@Override
 	public boolean init(CommandLine commandLine) {
@@ -86,8 +83,8 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		} else {
 			keyPath = commandLine.getOptionValue("keyPath");
 		}
-		if (commandLine.hasOption("usingKey")&&commandLine.getOptionValue("usingKey").equalsIgnoreCase("true")) {			
-			skipKeyGeneration=true;
+		if (commandLine.hasOption("usingKey") && commandLine.getOptionValue("usingKey").equalsIgnoreCase("true")) {
+			skipKeyGeneration = true;
 		}
 		return true;
 	}
@@ -98,7 +95,8 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		opts.addOption("plainTextPath", true, "File to encrypt");
 		opts.addOption("cipherTextPath", true, "Path to write encrypted file to");
 		opts.addOption("keyPath", true, "Path to EnigmaKey.key file");
-		opts.addOption("usingKey",true,"true|false :Force Engima to encrypt using the provided key , instead of generating new key");
+		opts.addOption("usingKey", true,
+				"true|false :Force Engima to encrypt using the provided key , instead of generating new key");
 		opts.addOption("enigmaTempDir", true, "Directory to write internal machine streams and generated Key");
 		opts.addOption("enigmaCount", true, "Number of Engima Machines to encrypt with");
 
@@ -134,7 +132,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		}
 	}
 
-	private Phase createKeyGeneratorPhase(int machineCount,String keyPath) {
+	private Phase createKeyGeneratorPhase(int machineCount, String keyPath) {
 
 		List<Task> taskList = new ArrayList<>();
 		for (int i = 0; i < machineCount; i++) {
@@ -152,15 +150,16 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		return keyGeneratorPhase;
 	}
 
-	private Phase createStreamGeneratorPhase(String keyPath, String tmpDir, long length) {		
-		
-		StreamPhaseManager phaseManager = new StreamPhaseManager(this,keyPath,tmpDir,length,null);
+	private Phase createStreamGeneratorPhase(String keyPath, String tmpDir, long length) {
+
+		StreamPhaseManager phaseManager = new StreamPhaseManager(this, keyPath, tmpDir, length, null);
 		Phase streamPhase = new Phase("Stream Phase", phaseManager);
 		return streamPhase;
 
 	}
 
-	private Phase createCombinerPhase(String keyPath, String inputPath, String outputPath, String tmpDir,boolean reversed) {
+	private Phase createCombinerPhase(String keyPath, String inputPath, String outputPath, String tmpDir,
+			boolean reversed) {
 		List<Task> combineTasks = new ArrayList<>();
 		TaskContext combineTaskContext = new TaskContext(EnigmaCombinerTasklet.class);
 		combineTaskContext.addArg("keyPath", keyPath);
@@ -176,19 +175,17 @@ public class EnigmaAppMaster extends ApplicationMaster {
 
 	}
 
-	
-
 	private void registerEncryptPhases() {
 		LOG.info("Registering Encryption Phases");
-		if(!skipKeyGeneration){
+		if (!skipKeyGeneration) {
 			LOG.info("Registering generate new key phase");
-			Phase keyGenPhase = createKeyGeneratorPhase(enigmaCount,keyPath);
+			Phase keyGenPhase = createKeyGeneratorPhase(enigmaCount, keyPath);
 			if (keyGenPhase == null) {
 				LOG.error("Failed to create Key Generator phase");
 				throw new RuntimeException("Failed to create Key Generator phase");
 			}
 			registerPhase(keyGenPhase);
-		}	
+		}
 
 		long length = getInputLength(plainTextPath);
 		if (length == -1) {
@@ -202,7 +199,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		}
 		registerPhase(streamPhase);
 
-		Phase combinePhase = createCombinerPhase(keyPath, plainTextPath, cipherTextPath, enigmaTempDir,false);
+		Phase combinePhase = createCombinerPhase(keyPath, plainTextPath, cipherTextPath, enigmaTempDir, false);
 		if (combinePhase == null) {
 			LOG.error("Failed to create Combine phase");
 			throw new RuntimeException("Failed to create Combine phase");
@@ -226,7 +223,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		}
 		registerPhase(streamPhase);
 
-		Phase combinePhase = createCombinerPhase(keyPath, cipherTextPath, plainTextPath, enigmaTempDir,true);
+		Phase combinePhase = createCombinerPhase(keyPath, cipherTextPath, plainTextPath, enigmaTempDir, true);
 		if (combinePhase == null) {
 			LOG.error("Failed to create Combine phase");
 			throw new RuntimeException("Failed to create Combine phase");
@@ -267,11 +264,11 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		this.cipherTextPath = cipherTextPath;
 	}
 
-	public List<String> getMachineIdList() {
+	public List<CharSequence> getMachineIdList() {
 		return machineIdList;
 	}
 
-	public void setMachineIdList(List<String> machineIdList) {
+	public void setMachineIdList(List<CharSequence> machineIdList) {
 		this.machineIdList = machineIdList;
 	}
 

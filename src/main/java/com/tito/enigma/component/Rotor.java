@@ -1,10 +1,11 @@
 package com.tito.enigma.component;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.tito.enigma.config.RotorConfig;
+import com.tito.enigma.avro.RotorConfig;
 
 public class Rotor implements Switch {
 
@@ -13,11 +14,16 @@ public class Rotor implements Switch {
 	private BiMap<Byte, Byte> map;
 
 	public Rotor(RotorConfig rc) {
-		offset = Util.toUnsigned(rc.getOffset());
-		notchIndexSet = rc.getNotchSet();
-		map = HashBiMap.create(rc.getMap().length);
-		for (int i = 0; i < rc.getMap().length; i++) {
-			map.put((byte) i, rc.getMap()[i]);
+		offset = rc.getOffset();
+		notchIndexSet = new HashSet<>();
+		
+		for(int i=0;i<rc.getNotchSet().limit();i++){
+			notchIndexSet.add(rc.getNotchSet().get());
+		}
+		
+		map = HashBiMap.create(rc.getMap().limit());
+		for (int i = 0; i < rc.getMap().limit(); i++) {
+			map.put((byte) i, rc.getMap().get());
 		}
 	}
 
@@ -42,7 +48,7 @@ public class Rotor implements Switch {
 
 	public boolean rotate() {
 		offset = (offset + 1) % 256;
-		return notchIndexSet.contains(offset);
+		return notchIndexSet.contains((byte)offset);
 
 	}
 

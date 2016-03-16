@@ -8,11 +8,11 @@
       "type": "bytes"
     },
     {
-      "name": "plugBaordWiring",
+      "name": "plugBoardConfig",
       "type": {
         "type": "array",
         "items": {
-          "name": "wiringPair",
+          "name": "WiringPair",
           "type": "record",
           "fields": [
             {
@@ -32,7 +32,7 @@
       "type": {
         "type": "array",
         "items": {
-          "name": "rotorConfig",
+          "name": "RotorConfig",
           "type": "record",
           "fields": [
             {

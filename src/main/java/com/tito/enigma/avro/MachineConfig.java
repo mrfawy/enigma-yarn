@@ -7,12 +7,12 @@ package com.tito.enigma.avro;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -9196780741678690885L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"MachineConfig\",\"namespace\":\"com.tito.enigma.avro\",\"fields\":[{\"name\":\"reflectorConfig\",\"type\":\"bytes\"},{\"name\":\"plugBaordWiring\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"wiringPair\",\"fields\":[{\"name\":\"from\",\"type\":\"int\"},{\"name\":\"to\",\"type\":\"int\"}]}}},{\"name\":\"rotorConfigs\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"rotorConfig\",\"fields\":[{\"name\":\"map\",\"type\":\"bytes\"},{\"name\":\"notchSet\",\"type\":\"bytes\"},{\"name\":\"offset\",\"type\":\"int\"}]}}}]}");
+  private static final long serialVersionUID = 7358717958044629053L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"MachineConfig\",\"namespace\":\"com.tito.enigma.avro\",\"fields\":[{\"name\":\"reflectorConfig\",\"type\":\"bytes\"},{\"name\":\"plugBoardConfig\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"WiringPair\",\"fields\":[{\"name\":\"from\",\"type\":\"int\"},{\"name\":\"to\",\"type\":\"int\"}]}}},{\"name\":\"rotorConfigs\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"RotorConfig\",\"fields\":[{\"name\":\"map\",\"type\":\"bytes\"},{\"name\":\"notchSet\",\"type\":\"bytes\"},{\"name\":\"offset\",\"type\":\"int\"}]}}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
   @Deprecated public java.nio.ByteBuffer reflectorConfig;
-  @Deprecated public java.util.List<com.tito.enigma.avro.wiringPair> plugBaordWiring;
-  @Deprecated public java.util.List<com.tito.enigma.avro.rotorConfig> rotorConfigs;
+  @Deprecated public java.util.List<com.tito.enigma.avro.WiringPair> plugBoardConfig;
+  @Deprecated public java.util.List<com.tito.enigma.avro.RotorConfig> rotorConfigs;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -24,9 +24,9 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
   /**
    * All-args constructor.
    */
-  public MachineConfig(java.nio.ByteBuffer reflectorConfig, java.util.List<com.tito.enigma.avro.wiringPair> plugBaordWiring, java.util.List<com.tito.enigma.avro.rotorConfig> rotorConfigs) {
+  public MachineConfig(java.nio.ByteBuffer reflectorConfig, java.util.List<com.tito.enigma.avro.WiringPair> plugBoardConfig, java.util.List<com.tito.enigma.avro.RotorConfig> rotorConfigs) {
     this.reflectorConfig = reflectorConfig;
-    this.plugBaordWiring = plugBaordWiring;
+    this.plugBoardConfig = plugBoardConfig;
     this.rotorConfigs = rotorConfigs;
   }
 
@@ -35,7 +35,7 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
   public java.lang.Object get(int field$) {
     switch (field$) {
     case 0: return reflectorConfig;
-    case 1: return plugBaordWiring;
+    case 1: return plugBoardConfig;
     case 2: return rotorConfigs;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
@@ -45,8 +45,8 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
     case 0: reflectorConfig = (java.nio.ByteBuffer)value$; break;
-    case 1: plugBaordWiring = (java.util.List<com.tito.enigma.avro.wiringPair>)value$; break;
-    case 2: rotorConfigs = (java.util.List<com.tito.enigma.avro.rotorConfig>)value$; break;
+    case 1: plugBoardConfig = (java.util.List<com.tito.enigma.avro.WiringPair>)value$; break;
+    case 2: rotorConfigs = (java.util.List<com.tito.enigma.avro.RotorConfig>)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -67,24 +67,24 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
   }
 
   /**
-   * Gets the value of the 'plugBaordWiring' field.
+   * Gets the value of the 'plugBoardConfig' field.
    */
-  public java.util.List<com.tito.enigma.avro.wiringPair> getPlugBaordWiring() {
-    return plugBaordWiring;
+  public java.util.List<com.tito.enigma.avro.WiringPair> getPlugBoardConfig() {
+    return plugBoardConfig;
   }
 
   /**
-   * Sets the value of the 'plugBaordWiring' field.
+   * Sets the value of the 'plugBoardConfig' field.
    * @param value the value to set.
    */
-  public void setPlugBaordWiring(java.util.List<com.tito.enigma.avro.wiringPair> value) {
-    this.plugBaordWiring = value;
+  public void setPlugBoardConfig(java.util.List<com.tito.enigma.avro.WiringPair> value) {
+    this.plugBoardConfig = value;
   }
 
   /**
    * Gets the value of the 'rotorConfigs' field.
    */
-  public java.util.List<com.tito.enigma.avro.rotorConfig> getRotorConfigs() {
+  public java.util.List<com.tito.enigma.avro.RotorConfig> getRotorConfigs() {
     return rotorConfigs;
   }
 
@@ -92,7 +92,7 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
    * Sets the value of the 'rotorConfigs' field.
    * @param value the value to set.
    */
-  public void setRotorConfigs(java.util.List<com.tito.enigma.avro.rotorConfig> value) {
+  public void setRotorConfigs(java.util.List<com.tito.enigma.avro.RotorConfig> value) {
     this.rotorConfigs = value;
   }
 
@@ -129,8 +129,8 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
     implements org.apache.avro.data.RecordBuilder<MachineConfig> {
 
     private java.nio.ByteBuffer reflectorConfig;
-    private java.util.List<com.tito.enigma.avro.wiringPair> plugBaordWiring;
-    private java.util.List<com.tito.enigma.avro.rotorConfig> rotorConfigs;
+    private java.util.List<com.tito.enigma.avro.WiringPair> plugBoardConfig;
+    private java.util.List<com.tito.enigma.avro.RotorConfig> rotorConfigs;
 
     /** Creates a new Builder */
     private Builder() {
@@ -147,8 +147,8 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
         this.reflectorConfig = data().deepCopy(fields()[0].schema(), other.reflectorConfig);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.plugBaordWiring)) {
-        this.plugBaordWiring = data().deepCopy(fields()[1].schema(), other.plugBaordWiring);
+      if (isValidValue(fields()[1], other.plugBoardConfig)) {
+        this.plugBoardConfig = data().deepCopy(fields()[1].schema(), other.plugBoardConfig);
         fieldSetFlags()[1] = true;
       }
       if (isValidValue(fields()[2], other.rotorConfigs)) {
@@ -167,8 +167,8 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
         this.reflectorConfig = data().deepCopy(fields()[0].schema(), other.reflectorConfig);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.plugBaordWiring)) {
-        this.plugBaordWiring = data().deepCopy(fields()[1].schema(), other.plugBaordWiring);
+      if (isValidValue(fields()[1], other.plugBoardConfig)) {
+        this.plugBoardConfig = data().deepCopy(fields()[1].schema(), other.plugBoardConfig);
         fieldSetFlags()[1] = true;
       }
       if (isValidValue(fields()[2], other.rotorConfigs)) {
@@ -217,40 +217,40 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
     }
 
     /**
-      * Gets the value of the 'plugBaordWiring' field.
+      * Gets the value of the 'plugBoardConfig' field.
       * @return The value.
       */
-    public java.util.List<com.tito.enigma.avro.wiringPair> getPlugBaordWiring() {
-      return plugBaordWiring;
+    public java.util.List<com.tito.enigma.avro.WiringPair> getPlugBoardConfig() {
+      return plugBoardConfig;
     }
 
     /**
-      * Sets the value of the 'plugBaordWiring' field.
-      * @param value The value of 'plugBaordWiring'.
+      * Sets the value of the 'plugBoardConfig' field.
+      * @param value The value of 'plugBoardConfig'.
       * @return This builder.
       */
-    public com.tito.enigma.avro.MachineConfig.Builder setPlugBaordWiring(java.util.List<com.tito.enigma.avro.wiringPair> value) {
+    public com.tito.enigma.avro.MachineConfig.Builder setPlugBoardConfig(java.util.List<com.tito.enigma.avro.WiringPair> value) {
       validate(fields()[1], value);
-      this.plugBaordWiring = value;
+      this.plugBoardConfig = value;
       fieldSetFlags()[1] = true;
       return this; 
     }
 
     /**
-      * Checks whether the 'plugBaordWiring' field has been set.
-      * @return True if the 'plugBaordWiring' field has been set, false otherwise.
+      * Checks whether the 'plugBoardConfig' field has been set.
+      * @return True if the 'plugBoardConfig' field has been set, false otherwise.
       */
-    public boolean hasPlugBaordWiring() {
+    public boolean hasPlugBoardConfig() {
       return fieldSetFlags()[1];
     }
 
 
     /**
-      * Clears the value of the 'plugBaordWiring' field.
+      * Clears the value of the 'plugBoardConfig' field.
       * @return This builder.
       */
-    public com.tito.enigma.avro.MachineConfig.Builder clearPlugBaordWiring() {
-      plugBaordWiring = null;
+    public com.tito.enigma.avro.MachineConfig.Builder clearPlugBoardConfig() {
+      plugBoardConfig = null;
       fieldSetFlags()[1] = false;
       return this;
     }
@@ -259,7 +259,7 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
       * Gets the value of the 'rotorConfigs' field.
       * @return The value.
       */
-    public java.util.List<com.tito.enigma.avro.rotorConfig> getRotorConfigs() {
+    public java.util.List<com.tito.enigma.avro.RotorConfig> getRotorConfigs() {
       return rotorConfigs;
     }
 
@@ -268,7 +268,7 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
       * @param value The value of 'rotorConfigs'.
       * @return This builder.
       */
-    public com.tito.enigma.avro.MachineConfig.Builder setRotorConfigs(java.util.List<com.tito.enigma.avro.rotorConfig> value) {
+    public com.tito.enigma.avro.MachineConfig.Builder setRotorConfigs(java.util.List<com.tito.enigma.avro.RotorConfig> value) {
       validate(fields()[2], value);
       this.rotorConfigs = value;
       fieldSetFlags()[2] = true;
@@ -299,8 +299,8 @@ public class MachineConfig extends org.apache.avro.specific.SpecificRecordBase i
       try {
         MachineConfig record = new MachineConfig();
         record.reflectorConfig = fieldSetFlags()[0] ? this.reflectorConfig : (java.nio.ByteBuffer) defaultValue(fields()[0]);
-        record.plugBaordWiring = fieldSetFlags()[1] ? this.plugBaordWiring : (java.util.List<com.tito.enigma.avro.wiringPair>) defaultValue(fields()[1]);
-        record.rotorConfigs = fieldSetFlags()[2] ? this.rotorConfigs : (java.util.List<com.tito.enigma.avro.rotorConfig>) defaultValue(fields()[2]);
+        record.plugBoardConfig = fieldSetFlags()[1] ? this.plugBoardConfig : (java.util.List<com.tito.enigma.avro.WiringPair>) defaultValue(fields()[1]);
+        record.rotorConfigs = fieldSetFlags()[2] ? this.rotorConfigs : (java.util.List<com.tito.enigma.avro.RotorConfig>) defaultValue(fields()[2]);
         return record;
       } catch (Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);

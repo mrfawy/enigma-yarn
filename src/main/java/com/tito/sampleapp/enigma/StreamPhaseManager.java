@@ -7,8 +7,8 @@ import com.tito.easyyarn.phase.PhaseListener;
 import com.tito.easyyarn.phase.PhaseManager;
 import com.tito.easyyarn.task.Task;
 import com.tito.easyyarn.task.TaskContext;
+import com.tito.enigma.avro.EnigmaKey;
 import com.tito.enigma.component.EnigmaKeyUtil;
-import com.tito.enigma.config.EnigmaKey;
 
 public class StreamPhaseManager extends PhaseManager {
 	private static final Log LOG = LogFactory.getLog(StreamPhaseManager.class);
@@ -46,16 +46,12 @@ public class StreamPhaseManager extends PhaseManager {
 	}
 
 	@Override
-	public void defineTasks() {
-		if(enigmaKey==null){			
-			LOG.error("Failed to load Enigma key");
-			throw new RuntimeException("Failed to load Enigma key");
-		}
-		for (String machineId : enigmaKey.getMachineOrder()) {
+	public void defineTasks() {		
+		for (CharSequence machineId : enigmaKey.getMachineOrder()) {
 			TaskContext taskContext = new TaskContext(EnigmaStreamGeneratorTasklet.class);
 			taskContext.addArg("enigmaTempDir", tmpDir);
 			taskContext.addArg("keyPath", keyPath);
-			taskContext.addArg("machineId", machineId);
+			taskContext.addArg("machineId", machineId.toString());
 			taskContext.addArg("length", String.valueOf(length));
 			Task genTask = new Task("stream_" + machineId, taskContext);
 			RegisterTask(genTask);

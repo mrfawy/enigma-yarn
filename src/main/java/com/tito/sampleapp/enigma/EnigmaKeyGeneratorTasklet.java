@@ -2,6 +2,9 @@ package com.tito.sampleapp.enigma;
 
 import java.io.IOException;
 
+import org.apache.avro.file.DataFileWriter;
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.logging.Log;
@@ -11,8 +14,8 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tito.easyyarn.task.Tasklet;
+import com.tito.enigma.avro.MachineConfig;
 import com.tito.enigma.config.ConfigGenerator;
 
 public class EnigmaKeyGeneratorTasklet extends Tasklet {
@@ -74,17 +77,21 @@ public class EnigmaKeyGeneratorTasklet extends Tasklet {
 		FSDataOutputStream fout = null;
 		try {
 			Configuration conf = new Configuration();
-			FileSystem fs = FileSystem.get(conf);
-			Path keyFile = new Path(enigmaTempDir+Path.SEPARATOR + machineId + ".spec");
+			FileSystem fs = FileSystem.get(conf);			
+			Path keyFile = new Path(enigmaTempDir + Path.SEPARATOR + machineId + ".spec");
 			if (fs.exists(keyFile)) {
 				LOG.info("Replacing Key file" + keyFile);
 				fs.delete(keyFile, true);
 			}
 			fout = fs.create(keyFile);
 			ConfigGenerator gen = new ConfigGenerator();
-			String confJson = new ObjectMapper()
-					.writeValueAsString(gen.generateConfiguration(minRotorCount, maxRotorCount));
-			fout.writeUTF(confJson);
+			MachineConfig machineConfig = gen.generateConfiguration(minRotorCount, maxRotorCount);
+			
+			DatumWriter<MachineConfig> specDatumWriter = new SpecificDatumWriter<MachineConfig>(MachineConfig.class);
+			DataFileWriter<MachineConfig> dataFileWriter = new DataFileWriter<MachineConfig>(specDatumWriter);
+			dataFileWriter.create(machineConfig.getSchema(), fout);
+			dataFileWriter.append(machineConfig);
+			dataFileWriter.close();
 
 		} catch (Exception ex) {
 			LOG.error("Error={}", ex);

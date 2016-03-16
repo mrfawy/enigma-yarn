@@ -2,22 +2,25 @@ package com.tito.enigma.component;
 
 import java.io.IOException;
 
+import org.apache.avro.file.DataFileReader;
+import org.apache.avro.file.SeekableInput;
+import org.apache.avro.io.DatumReader;
+import org.apache.avro.mapred.FsInput;
+import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tito.enigma.config.EnigmaKey;
+import com.tito.enigma.avro.EnigmaKey;
 
 public class EnigmaKeyUtil {
 	private static final Log LOG = LogFactory.getLog(EnigmaKeyUtil.class);
 
 	public static EnigmaKey loadKey(String keyPath) {
 		Configuration conf = new Configuration();
-		FSDataInputStream fin = null;
+		SeekableInput input = null;
 		try {
 			FileSystem fs = FileSystem.get(conf);
 			Path keyFile = new Path(keyPath);
@@ -25,21 +28,24 @@ public class EnigmaKeyUtil {
 				LOG.error("Key not found ," + keyFile);
 				return null;
 			}
-			fin = fs.open(keyFile);
-			String keyJson = fin.readUTF();
-			EnigmaKey enigmaKey = new ObjectMapper().readValue(keyJson, EnigmaKey.class);
+			LOG.info("Found Key:"+keyFile);
+			input = new FsInput(keyFile, conf);
+
+			DatumReader<EnigmaKey> keyDatumReader = new SpecificDatumReader<EnigmaKey>(EnigmaKey.class);
+			DataFileReader<EnigmaKey> dataFileReader = new DataFileReader<EnigmaKey>(input, keyDatumReader);
+			if(!dataFileReader.hasNext()){
+				LOG.error("DataFileReader has no elements, check key file contents");
+			}
+			EnigmaKey enigmaKey = dataFileReader.next();
+			if(enigmaKey==null){
+				LOG.error("EnigmaKey loading failed");
+			}	
+			dataFileReader.close();
+			input.close();
 			return enigmaKey;
 		} catch (Exception ex) {
 			LOG.error("Error={}", ex);
 			return null;
-		} finally {
-			if (fin != null) {
-				try {
-					fin.close();
-				} catch (IOException e) {
-					LOG.error("error={}", e);
-				}
-			}
 		}
 	}
 }

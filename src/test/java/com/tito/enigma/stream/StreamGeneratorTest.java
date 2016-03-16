@@ -6,8 +6,8 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.tito.enigma.avro.MachineConfig;
 import com.tito.enigma.config.ConfigGenerator;
-import com.tito.enigma.config.MachineConfig;
 
 
 

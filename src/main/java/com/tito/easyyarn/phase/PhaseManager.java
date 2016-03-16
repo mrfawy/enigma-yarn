@@ -61,6 +61,8 @@ public abstract class PhaseManager {
 
 	private List<Thread> launchThreads = new ArrayList<Thread>();
 	
+	private boolean failed;
+	
 	
 
 	public PhaseManager(ApplicationMaster appMaster,PhaseListener phaseListener) {
@@ -101,14 +103,16 @@ public abstract class PhaseManager {
 	public void start() {
 		try{
 			LOG.info("PhaseManager Start");
+			if (!checkDependencies()) {
+				failed=true;
+				throw new RuntimeException("Dependencies Check is not met , aborting phase");
+			}
 			defineTasks();
 			LOG.info("PhaseManager TaskListSize:"+taskList.size());
 			LOG.info("PhaseManager Pending:"+pendingTasks.size());
 			LOG.info("PhaseManager Failed:"+failedTasks.size());
 			LOG.info("PhaseManager Completed:"+completedTasks.size());
-			if (!checkDependencies()) {
-				throw new RuntimeException("Dependencies Check is not met , aborting phase");
-			}
+			
 			if(phaseListener!=null){
 				phaseListener.onPhaseStarted(phase);
 			}
@@ -264,7 +268,7 @@ public abstract class PhaseManager {
 	}
 
 	public boolean hasCompletedSuccessfully() {
-		return hasCompleted() && failedTasks.size() == 0 ;
+		return !failed&&hasCompleted() && failedTasks.size() == 0 ;
 	}
 
 	public AtomicInteger getNumRequestedContainers() {
