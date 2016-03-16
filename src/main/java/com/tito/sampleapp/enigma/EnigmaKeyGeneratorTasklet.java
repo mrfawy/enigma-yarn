@@ -44,9 +44,9 @@ public class EnigmaKeyGeneratorTasklet extends Tasklet {
 			enigmaTempDir = commandLine.getOptionValue("enigmaTempDir");
 		}
 
-		minRotorCount = Integer.valueOf(commandLine.getOptionValue("minRotorCount", "1"));
+		minRotorCount = Integer.valueOf(commandLine.getOptionValue("minRotorCount", "15"));
 
-		maxRotorCount = Integer.valueOf(commandLine.getOptionValue("maxRotorCount", "5"));
+		maxRotorCount = Integer.valueOf(commandLine.getOptionValue("maxRotorCount", "100"));
 
 		return true;
 	}
