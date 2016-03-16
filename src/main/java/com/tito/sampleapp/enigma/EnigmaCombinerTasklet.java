@@ -35,7 +35,7 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	private StreamCombiner streamCombiner;
 
-	List<CharSequence> machineSequence;
+	List<String> machineSequence;
 	List<FSDataInputStream> machineStreamList;
 
 	private EnigmaKey key;
@@ -139,7 +139,9 @@ public class EnigmaCombinerTasklet extends Tasklet {
 			while ((read = inputStream.read(inputBuffer)) != -1) {
 				List<ByteBuffer> mapping = readStreamMapping(machineStreamList);
 				ByteBuffer outputBuffer = streamCombiner.combine(inputBuffer, mapping, isReversed);
-				outputBuffer.flip();
+				if(outputBuffer.position()!=0){
+					outputBuffer.flip();
+				}				
 				byte[] data = new byte[outputBuffer.limit()];
 				outputBuffer.get(data);
 				outputStream.write(data);
@@ -180,12 +182,12 @@ public class EnigmaCombinerTasklet extends Tasklet {
 
 	}
 
-	private List<FSDataInputStream> getMachineStreams(List<CharSequence> machineSequence) {
+	private List<FSDataInputStream> getMachineStreams(List<String> machineSequence) {
 		try {
 			List<FSDataInputStream> machineStreamList = new ArrayList<>();
 			Configuration conf = new Configuration();
 			FileSystem fs = FileSystem.get(conf);
-			for (CharSequence machineId : machineSequence) {
+			for (String machineId : machineSequence) {
 				Path streamFile = Path.mergePaths(new Path(enigmaTempDir),
 						new Path(Path.SEPARATOR + machineId + ".stream"));
 				if (!fs.exists(streamFile)) {

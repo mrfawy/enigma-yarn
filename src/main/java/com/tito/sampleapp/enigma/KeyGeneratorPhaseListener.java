@@ -52,9 +52,9 @@ public class KeyGeneratorPhaseListener implements PhaseListener {
 
 				Configuration conf = new Configuration();
 				FileSystem fs = FileSystem.get(conf);
-				Map<CharSequence, MachineConfig> machinConfigMap = new HashMap<>();
+				Map<String, MachineConfig> machinConfigMap = new HashMap<>();
 
-				for (CharSequence machineId : enigmaEncryptorAppMaster.getMachineIdList()) {
+				for (String machineId : enigmaEncryptorAppMaster.getMachineIdList()) {
 					Path configFile = new Path(
 							enigmaEncryptorAppMaster.getEnigmaTempDir() + Path.SEPARATOR + machineId + ".spec");
 
@@ -68,7 +68,8 @@ public class KeyGeneratorPhaseListener implements PhaseListener {
 					DataFileReader<MachineConfig> dataFileReader = new DataFileReader<MachineConfig>(input, configDatumReader);
 					MachineConfig machineConfig = dataFileReader.next();										
 					machinConfigMap.put(machineId, machineConfig);
-					input.close();
+					dataFileReader.close();
+					
 					
 				}
 				EnigmaKey enigmaKey = new EnigmaKey();

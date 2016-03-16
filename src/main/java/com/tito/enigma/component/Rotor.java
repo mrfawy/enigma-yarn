@@ -16,11 +16,15 @@ public class Rotor implements Switch {
 	public Rotor(RotorConfig rc) {
 		offset = rc.getOffset();
 		notchIndexSet = new HashSet<>();
-		
+		if(rc.getNotchSet().position()!=0){
+			rc.getNotchSet().flip();
+		}
 		for(int i=0;i<rc.getNotchSet().limit();i++){
 			notchIndexSet.add(rc.getNotchSet().get());
 		}
-		
+		if(rc.getMap().position()!=0){
+			rc.getMap().flip();
+		}
 		map = HashBiMap.create(rc.getMap().limit());
 		for (int i = 0; i < rc.getMap().limit(); i++) {
 			map.put((byte) i, rc.getMap().get());

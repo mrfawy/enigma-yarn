@@ -7,11 +7,11 @@ package com.tito.enigma.avro;
 @SuppressWarnings("all")
 @org.apache.avro.specific.AvroGenerated
 public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -3857369258135720210L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"EnigmaKey\",\"namespace\":\"com.tito.enigma.avro\",\"fields\":[{\"name\":\"machineOrder\",\"type\":{\"type\":\"array\",\"items\":\"string\"}},{\"name\":\"machineConfig\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"record\",\"name\":\"MachineConfig\",\"fields\":[{\"name\":\"reflectorConfig\",\"type\":\"bytes\"},{\"name\":\"plugBaordWiring\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"wiringPair\",\"fields\":[{\"name\":\"from\",\"type\":\"int\"},{\"name\":\"to\",\"type\":\"int\"}]}}},{\"name\":\"rotorConfigs\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"rotorConfig\",\"fields\":[{\"name\":\"map\",\"type\":\"bytes\"},{\"name\":\"notchSet\",\"type\":\"bytes\"},{\"name\":\"offset\",\"type\":\"int\"}]}}}]}}}]}");
+  private static final long serialVersionUID = 7611253750860449866L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"EnigmaKey\",\"namespace\":\"com.tito.enigma.avro\",\"fields\":[{\"name\":\"machineOrder\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}},{\"name\":\"machineConfig\",\"type\":{\"type\":\"map\",\"values\":{\"type\":\"record\",\"name\":\"MachineConfig\",\"fields\":[{\"name\":\"reflectorConfig\",\"type\":\"bytes\"},{\"name\":\"plugBoardConfig\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"WiringPair\",\"fields\":[{\"name\":\"from\",\"type\":\"int\"},{\"name\":\"to\",\"type\":\"int\"}]}}},{\"name\":\"rotorConfigs\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"RotorConfig\",\"fields\":[{\"name\":\"map\",\"type\":\"bytes\"},{\"name\":\"notchSet\",\"type\":\"bytes\"},{\"name\":\"offset\",\"type\":\"int\"}]}}}]},\"avro.java.string\":\"String\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
-  @Deprecated public java.util.List<java.lang.CharSequence> machineOrder;
-  @Deprecated public java.util.Map<java.lang.CharSequence,com.tito.enigma.avro.MachineConfig> machineConfig;
+  @Deprecated public java.util.List<java.lang.String> machineOrder;
+  @Deprecated public java.util.Map<java.lang.String,com.tito.enigma.avro.MachineConfig> machineConfig;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -23,7 +23,7 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
   /**
    * All-args constructor.
    */
-  public EnigmaKey(java.util.List<java.lang.CharSequence> machineOrder, java.util.Map<java.lang.CharSequence,com.tito.enigma.avro.MachineConfig> machineConfig) {
+  public EnigmaKey(java.util.List<java.lang.String> machineOrder, java.util.Map<java.lang.String,com.tito.enigma.avro.MachineConfig> machineConfig) {
     this.machineOrder = machineOrder;
     this.machineConfig = machineConfig;
   }
@@ -41,8 +41,8 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
   @SuppressWarnings(value="unchecked")
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: machineOrder = (java.util.List<java.lang.CharSequence>)value$; break;
-    case 1: machineConfig = (java.util.Map<java.lang.CharSequence,com.tito.enigma.avro.MachineConfig>)value$; break;
+    case 0: machineOrder = (java.util.List<java.lang.String>)value$; break;
+    case 1: machineConfig = (java.util.Map<java.lang.String,com.tito.enigma.avro.MachineConfig>)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
@@ -50,7 +50,7 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
   /**
    * Gets the value of the 'machineOrder' field.
    */
-  public java.util.List<java.lang.CharSequence> getMachineOrder() {
+  public java.util.List<java.lang.String> getMachineOrder() {
     return machineOrder;
   }
 
@@ -58,14 +58,14 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
    * Sets the value of the 'machineOrder' field.
    * @param value the value to set.
    */
-  public void setMachineOrder(java.util.List<java.lang.CharSequence> value) {
+  public void setMachineOrder(java.util.List<java.lang.String> value) {
     this.machineOrder = value;
   }
 
   /**
    * Gets the value of the 'machineConfig' field.
    */
-  public java.util.Map<java.lang.CharSequence,com.tito.enigma.avro.MachineConfig> getMachineConfig() {
+  public java.util.Map<java.lang.String,com.tito.enigma.avro.MachineConfig> getMachineConfig() {
     return machineConfig;
   }
 
@@ -73,7 +73,7 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
    * Sets the value of the 'machineConfig' field.
    * @param value the value to set.
    */
-  public void setMachineConfig(java.util.Map<java.lang.CharSequence,com.tito.enigma.avro.MachineConfig> value) {
+  public void setMachineConfig(java.util.Map<java.lang.String,com.tito.enigma.avro.MachineConfig> value) {
     this.machineConfig = value;
   }
 
@@ -109,8 +109,8 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<EnigmaKey>
     implements org.apache.avro.data.RecordBuilder<EnigmaKey> {
 
-    private java.util.List<java.lang.CharSequence> machineOrder;
-    private java.util.Map<java.lang.CharSequence,com.tito.enigma.avro.MachineConfig> machineConfig;
+    private java.util.List<java.lang.String> machineOrder;
+    private java.util.Map<java.lang.String,com.tito.enigma.avro.MachineConfig> machineConfig;
 
     /** Creates a new Builder */
     private Builder() {
@@ -153,7 +153,7 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
       * Gets the value of the 'machineOrder' field.
       * @return The value.
       */
-    public java.util.List<java.lang.CharSequence> getMachineOrder() {
+    public java.util.List<java.lang.String> getMachineOrder() {
       return machineOrder;
     }
 
@@ -162,7 +162,7 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
       * @param value The value of 'machineOrder'.
       * @return This builder.
       */
-    public com.tito.enigma.avro.EnigmaKey.Builder setMachineOrder(java.util.List<java.lang.CharSequence> value) {
+    public com.tito.enigma.avro.EnigmaKey.Builder setMachineOrder(java.util.List<java.lang.String> value) {
       validate(fields()[0], value);
       this.machineOrder = value;
       fieldSetFlags()[0] = true;
@@ -192,7 +192,7 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
       * Gets the value of the 'machineConfig' field.
       * @return The value.
       */
-    public java.util.Map<java.lang.CharSequence,com.tito.enigma.avro.MachineConfig> getMachineConfig() {
+    public java.util.Map<java.lang.String,com.tito.enigma.avro.MachineConfig> getMachineConfig() {
       return machineConfig;
     }
 
@@ -201,7 +201,7 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
       * @param value The value of 'machineConfig'.
       * @return This builder.
       */
-    public com.tito.enigma.avro.EnigmaKey.Builder setMachineConfig(java.util.Map<java.lang.CharSequence,com.tito.enigma.avro.MachineConfig> value) {
+    public com.tito.enigma.avro.EnigmaKey.Builder setMachineConfig(java.util.Map<java.lang.String,com.tito.enigma.avro.MachineConfig> value) {
       validate(fields()[1], value);
       this.machineConfig = value;
       fieldSetFlags()[1] = true;
@@ -231,8 +231,8 @@ public class EnigmaKey extends org.apache.avro.specific.SpecificRecordBase imple
     public EnigmaKey build() {
       try {
         EnigmaKey record = new EnigmaKey();
-        record.machineOrder = fieldSetFlags()[0] ? this.machineOrder : (java.util.List<java.lang.CharSequence>) defaultValue(fields()[0]);
-        record.machineConfig = fieldSetFlags()[1] ? this.machineConfig : (java.util.Map<java.lang.CharSequence,com.tito.enigma.avro.MachineConfig>) defaultValue(fields()[1]);
+        record.machineOrder = fieldSetFlags()[0] ? this.machineOrder : (java.util.List<java.lang.String>) defaultValue(fields()[0]);
+        record.machineConfig = fieldSetFlags()[1] ? this.machineConfig : (java.util.Map<java.lang.String,com.tito.enigma.avro.MachineConfig>) defaultValue(fields()[1]);
         return record;
       } catch (Exception e) {
         throw new org.apache.avro.AvroRuntimeException(e);

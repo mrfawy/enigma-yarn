@@ -1,6 +1,7 @@
 package com.tito.sampleapp.enigma;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -76,7 +77,7 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 		try {
 			return generateStream();		
 		} catch (Exception e) {
-			LOG.error("Failed To generate Key", e);
+			LOG.error("Failed To generate Stream", e);
 			return false;
 		}
 
@@ -84,14 +85,18 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 
 	private boolean generateStream() {
 		LOG.info("Running generateStream");
-		EnigmaKey enigmaKey=EnigmaKeyUtil.loadKey(keyPath);
+		
 		Configuration conf = new Configuration();
-		FileSystem fs;
-		FSDataInputStream fin = null;
+		FileSystem fs;	
 		FSDataOutputStream fout = null;
 		try {
-			fs = FileSystem.get(conf);			
+			fs = FileSystem.get(conf);	
+			EnigmaKey enigmaKey=EnigmaKeyUtil.loadKey(keyPath);			
 			MachineConfig machineConfig = enigmaKey.getMachineConfig().get(machineId);
+			if(machineConfig==null){			
+				LOG.error("MachineConfig is null, aborting");
+				return false;
+			}
 
 			Path keyFile = new Path(enigmaTempDir + Path.SEPARATOR + machineId + ".stream");
 			if (fs.exists(keyFile)) {
@@ -106,18 +111,14 @@ public class EnigmaStreamGeneratorTasklet extends Tasklet {
 			}
 			LOG.info("Done generateStream for machine: " + machineId);
 			return true;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOG.error("gemerateStream Error={}", e);
 			return false;
 		} finally {
-			try {
-				if (fin != null) {
-					fin.close();
-				}
+			try {			
 				if (fout != null) {
 					fout.close();
-				}
-				return true;
+				}				
 
 			} catch (IOException e) {
 

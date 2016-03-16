@@ -6,6 +6,9 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.tito.enigma.avro.MachineConfig;
 import com.tito.enigma.avro.RotorConfig;
 import com.tito.enigma.component.PlugBoard;
@@ -14,7 +17,7 @@ import com.tito.enigma.component.Rotor;
 import com.tito.enigma.component.Util;
 
 public class StreamGenerator {
-
+	private static final Log LOG = LogFactory.getLog(StreamGenerator.class);
 	private static final int BUFFER_SIZE = 256 * 1000;
 	MachineConfig machineConfig;
 	List<Rotor> rotors;
@@ -24,6 +27,8 @@ public class StreamGenerator {
 	public StreamGenerator(MachineConfig machineConfig) {
 
 		this.machineConfig = machineConfig;
+		LOG.info("SPEC:"+machineConfig);
+		LOG.info("SPEC_RC:"+machineConfig.getRotorConfigs());
 		rotors = new ArrayList<>();
 		for (RotorConfig rc : machineConfig.getRotorConfigs()) {
 			rotors.add(new Rotor(rc));
@@ -35,7 +40,7 @@ public class StreamGenerator {
 	public boolean generateLength(long n, OutputStream outputStream) throws IOException {
 		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 		buffer.clear();
-
+		LOG.info("Generating Length:"+n);
 		for (long i = 0; i < n; i++) {
 			byte[] input = Util.getArray(256);
 			input = plugBoard.signalIn(input);
@@ -54,21 +59,20 @@ public class StreamGenerator {
 			int rotorIndex = 0;
 			do {
 				rotateFlag = rotors.get(rotorIndex++).rotate();
-			} while (rotateFlag == true);
+			} while (rotateFlag == true && rotorIndex<rotors.size());
 
 			buffer.put(input);
 			if (!buffer.hasRemaining()) {
+				buffer.flip();				
 				outputStream.write(Util.toArray(buffer));
 				buffer.clear();
 			}
 
 		}
 		// copy the rest of n if exists
-		if (buffer.position() != 0) {
-			byte[] data = new byte[buffer.position()];
-			buffer.rewind();
-			buffer.get(data);
-			outputStream.write(data);
+		if (buffer.position() != 0) {				
+			buffer.flip();			
+			outputStream.write(Util.toArray(buffer));
 			buffer.clear();
 		}
 		return true;

@@ -8,31 +8,34 @@ import com.tito.enigma.component.Util;
 
 public class StreamCombiner {
 
-	public ByteBuffer combine(ByteBuffer input, List<ByteBuffer> machineMapping,boolean reversed) {
-		input.flip();
+	public ByteBuffer combine(ByteBuffer input, List<ByteBuffer> machineMapping, boolean reversed) {
+		if(input.position()!=0){
+			input.flip();
+		}		
 		int inputSize = input.limit();
-		ByteBuffer output = ByteBuffer.allocate(inputSize);		
+		ByteBuffer output = ByteBuffer.allocate(inputSize);
 		for (ByteBuffer machineMap : machineMapping) {
-			machineMap.flip();
-		}
-		List<ByteBuffer> machineMappingSequence=new ArrayList<>();
-		//reverse sequence of machines when reversed
-		if(reversed){
-			for(int j=machineMapping.size()-1;j>=0;j--){
-				machineMappingSequence.add(machineMapping.get(j));
+			if (machineMap.position() != 0) {
+				machineMap.flip();
 			}
 		}
-		else{
-			 machineMappingSequence=machineMapping;
+		List<ByteBuffer> machineMappingSequence = new ArrayList<>();
+		// reverse sequence of machines when reversed
+		if (reversed) {
+			for (int j = machineMapping.size() - 1; j >= 0; j--) {
+				machineMappingSequence.add(machineMapping.get(j));
+			}
+		} else {
+			machineMappingSequence = machineMapping;
 		}
 
 		for (int i = 0; i < inputSize; i++) {
-			byte inputByte = input.get();			
+			byte inputByte = input.get();
 			for (ByteBuffer machineMap : machineMappingSequence) {
 				byte[] map = new byte[256];
 				machineMap.get(map);
-				if(reversed){
-					map=Util.reverseByteMap(map);
+				if (reversed) {
+					map = Util.reverseByteMap(map);
 				}
 				inputByte = map[Util.toUnsigned(inputByte)];
 			}
@@ -40,5 +43,5 @@ public class StreamCombiner {
 		}
 		return output;
 	}
-	
+
 }

@@ -30,7 +30,7 @@ public class EnigmaAppMaster extends ApplicationMaster {
 	private boolean isEncrypt;
 	private boolean skipKeyGeneration;
 
-	private List<CharSequence> machineIdList = new ArrayList<>();
+	private List<String> machineIdList = new ArrayList<>();
 
 	@Override
 	public boolean init(CommandLine commandLine) {
@@ -264,11 +264,11 @@ public class EnigmaAppMaster extends ApplicationMaster {
 		this.cipherTextPath = cipherTextPath;
 	}
 
-	public List<CharSequence> getMachineIdList() {
+	public List<String> getMachineIdList() {
 		return machineIdList;
 	}
 
-	public void setMachineIdList(List<CharSequence> machineIdList) {
+	public void setMachineIdList(List<String> machineIdList) {
 		this.machineIdList = machineIdList;
 	}
 

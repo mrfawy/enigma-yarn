@@ -5,7 +5,10 @@ import java.nio.ByteBuffer;
 public class Reflector implements Switch {
 	byte[] map;
 
-	public Reflector(ByteBuffer config) {		
+	public Reflector(ByteBuffer config) {
+		if(config.position()!=0){
+			config.flip();
+		}
 		this.map = Util.toArray(config);
 		
 	}
