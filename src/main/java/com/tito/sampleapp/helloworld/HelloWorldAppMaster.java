@@ -26,10 +26,16 @@ public class HelloWorldAppMaster extends ApplicationMaster {
 
 	@Override
 	protected void registerPhases() {
-
-		Task t = new Task("task", new TaskContext(HelloWorldTasklet.class));
 		List<Task> fixedTasks = new ArrayList<>();
-		fixedTasks.add(t);
+		for(int i=0;i<4;i++){
+			String id="task_"+i;
+			TaskContext tc = new TaskContext(HelloWorldTasklet.class);
+			tc.addArg("id", id);
+			Task t = new Task(id, tc);		
+			fixedTasks.add(t);
+		}
+
+		
 		Phase phase1 = new Phase("phase 1", new FixedTasksPhaseManager(this, fixedTasks, null));
 		registerPhase(phase1);
 

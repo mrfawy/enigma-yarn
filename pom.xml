@@ -65,6 +65,14 @@
 			<artifactId>avro-mapred</artifactId>
 			<version>1.8.0</version>
 		</dependency>
+
+		<!-- Jgroups messaging -->
+		<dependency>
+			<groupId>org.jgroups</groupId>
+			<artifactId>jgroups</artifactId>
+			<version>3.6.6.Final</version>
+		</dependency>
+
 	</dependencies>
 
 

@@ -86,4 +86,5 @@
   <classpathentry kind="var" path="M2_REPO/org/mortbay/jetty/servlet-api/2.5-20081211/servlet-api-2.5-20081211.jar"/>
   <classpathentry kind="var" path="M2_REPO/io/netty/netty/3.5.13.Final/netty-3.5.13.Final.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/apache/velocity/velocity/1.7/velocity-1.7.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jgroups/jgroups/3.6.6.Final/jgroups-3.6.6.Final.jar"/>
 </classpath>
