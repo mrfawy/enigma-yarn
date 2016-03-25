@@ -73,7 +73,7 @@ public class MessagingServiceAgent {
 			JChannel channel;
 			try {
 				channel = new JChannel();				
-				channel.setName(topic + "_"+id);
+				//channel.setName(topic + "_"+id);
 				channel.setDiscardOwnMessages(true);
 				channel.setReceiver(this.reciever);
 				channel.connect(topic);
