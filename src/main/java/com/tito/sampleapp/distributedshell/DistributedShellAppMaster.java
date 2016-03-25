@@ -13,7 +13,6 @@ import com.tito.easyyarn.phase.FixedTasksPhaseManager;
 import com.tito.easyyarn.phase.Phase;
 import com.tito.easyyarn.task.Task;
 import com.tito.easyyarn.task.TaskContext;
-import com.tito.sampleapp.helloworld.HelloWorldTasklet;
 
 public class DistributedShellAppMaster extends ApplicationMaster {
 	private static final Log LOG = LogFactory.getLog(DistributedShellAppMaster.class);

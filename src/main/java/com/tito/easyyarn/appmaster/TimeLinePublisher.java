@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.timeline.TimelineEntity;
 import org.apache.hadoop.yarn.api.records.timeline.TimelineEvent;
@@ -12,8 +13,6 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 
 import com.tito.easyyarn.appmaster.ApplicationMaster.DSEntity;
 import com.tito.easyyarn.appmaster.ApplicationMaster.DSEvent;
-
-import org.apache.hadoop.yarn.api.records.Container;
 
 public class TimeLinePublisher {
 	private TimelineClient timelineClient;

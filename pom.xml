@@ -65,6 +65,29 @@
 			<artifactId>avro-mapred</artifactId>
 			<version>1.8.0</version>
 		</dependency>
+
+		<!-- hazelCast -->
+
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+			<version>3.6</version>
+		</dependency>
+
+		<!-- curator for ZK V3.4 -->
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-recipes</artifactId>
+			<version>2.10.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-x-discovery</artifactId>
+			<version>2.10.0</version>
+		</dependency>
+
+
+
 	</dependencies>
 
 

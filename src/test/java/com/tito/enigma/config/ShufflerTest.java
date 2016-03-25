@@ -6,8 +6,6 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.tito.enigma.config.Shuffler;
-
 public class ShufflerTest {
 
 	@Test
