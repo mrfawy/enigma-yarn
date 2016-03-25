@@ -83,8 +83,10 @@ public class HazelZKConfig {
 
 	private ServiceDiscovery<Void> getServiceDiscovery() throws Exception {
 
-		return ServiceDiscoveryBuilder.builder(Void.class).basePath("hazelcast").client(getCuratorFramework())
-				.thisInstance(getServiceInstance()).build();
+		ServiceDiscovery<Void> serviceDiscovery = ServiceDiscoveryBuilder.builder(Void.class).basePath("hazelcast")
+				.client(getCuratorFramework()).thisInstance(getServiceInstance()).build();
+		serviceDiscovery.start();
+		return serviceDiscovery;
 
 	}
 
