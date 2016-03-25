@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Message;
 
+import com.tito.easyyarn.hazel.GridServiceAgent;
 import com.tito.easyyarn.service.messaging.MessagingServiceAgent;
 import com.tito.easyyarn.util.ExtendedGnuParser;
 
@@ -60,6 +61,7 @@ public abstract class Tasklet {
 
 	public boolean startServices() {
 		MessagingServiceAgent.initInstance(id, taskletReciever);
+		GridServiceAgent.initInstance(id);
 		return true;
 	}
 

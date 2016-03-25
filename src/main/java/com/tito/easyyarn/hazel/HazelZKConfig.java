@@ -4,6 +4,8 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -28,15 +30,17 @@ import com.hazelcast.core.HazelcastInstance;
  */
 
 public class HazelZKConfig {
+	private static final Log LOG = LogFactory.getLog(HazelZKConfig.class);
+
 	private int port = 5701;
 	private String appID = "EASY_YARN_HAZEL";// should be yarn applicationid
-	private String zooKeeperUrl = "lppbd0000.gso.aexp.com:5181";
+	private String zooKeeperUrl = "lppbd0020.gso.aexp.com:5181";
 
 	public HazelcastInstance getInstance() {
 		try {
 			return Hazelcast.newHazelcastInstance(getConfig());
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Failed to create HazelInstance");
 			return null;
 		}
 	}
@@ -92,7 +96,9 @@ public class HazelZKConfig {
 
 	private CuratorFramework getCuratorFramework() {
 		ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(1000, 3);
-		return CuratorFrameworkFactory.newClient(zooKeeperUrl, retryPolicy);
+		CuratorFramework curatorFrameowrk = CuratorFrameworkFactory.newClient(zooKeeperUrl, retryPolicy);
+		curatorFrameowrk.start();
+		return curatorFrameowrk;
 	}
 
 	private List<String> queryOtherInstancesInZk(String name, ServiceDiscovery<Void> serviceDiscovery)
