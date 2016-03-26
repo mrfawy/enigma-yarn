@@ -7,6 +7,8 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -23,8 +25,8 @@ import org.jgroups.util.Responses;
 import org.jgroups.util.Util;
 
 public class ZKPing extends FILE_PING {
+	private static final Log LOG = LogFactory.getLog(ZKPing.class);
 	public static final short ZK_PING_ID = 7001;
-	public static final short ZK_PING_ID2 = 7002;
 
 	private static final String ROOT_PATH = "/yarnina/messaging/jgroups/";
 
@@ -76,6 +78,7 @@ public class ZKPing extends FILE_PING {
 		case Event.CONNECT_WITH_STATE_TRANSFER_USE_FLUSH:
 			discoveryPath = ROOT_PATH + evt.getArg();
 			localNodePath = discoveryPath + "/" + addressAsString(local_addr);
+			LOG.info("localNodePath:" + localNodePath);
 			_createRootDir();
 			break;
 		}
@@ -84,14 +87,22 @@ public class ZKPing extends FILE_PING {
 
 	@Override
 	protected void readAll(final List<Address> members, final String clusterName, final Responses responses) {
+		 if (clusterName == null) {
+	            return;
+	     }
 		List<PingData> pingDataList = readAll(clusterName);
 		for (PingData pingData : pingDataList) {
 			if (members == null || members.contains(pingData.getAddress())) {
 				responses.addResponse(pingData, pingData.isCoord());
-				if (log.isTraceEnabled()) {
-					log.trace("added member %s [members: %s]", pingData, members != null);
-				}
+				LOG.info("added member:" + pingData);
 			}
+			 if (local_addr != null && !local_addr.equals(pingData.getAddress())) {
+                 addDiscoveryResponseToCaches(pingData.getAddress(), pingData.getLogicalName(),
+                         pingData.getPhysicalAddr());
+               
+                     LOG.info("added possible member:"+pingData+"[local address:"+local_addr+"]");
+               
+             }
 
 		}
 	}
@@ -143,14 +154,15 @@ public class ZKPing extends FILE_PING {
 		DataOutputStream dos = null;
 		try {
 			dos = new DataOutputStream(baos);
-
+			String nodePath=discoveryPath + "/" + addressAsString(data.getAddress());
 			data.writeTo(dos);
+			LOG.info("Writing PingData to : "+nodePath);
 
-			if (curator.checkExists().forPath(localNodePath) == null) {
-				curator.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(localNodePath,
+			if (curator.checkExists().forPath(nodePath) == null) {
+				curator.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(nodePath,
 						baos.toByteArray());
 			} else {
-				curator.setData().forPath(localNodePath, baos.toByteArray());
+				curator.setData().forPath(nodePath, baos.toByteArray());
 			}
 		} catch (Exception ex) {
 			log.error("Error saving ping data", ex);
@@ -176,6 +188,7 @@ public class ZKPing extends FILE_PING {
 		}
 	}
 
+	@Override
 	protected void remove(String clustername, Address addr) {
 		removeNode(discoveryPath + "/" + addressAsString(addr));
 	}
