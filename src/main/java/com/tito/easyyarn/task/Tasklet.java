@@ -6,6 +6,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Message;
+import org.jgroups.util.Util;
 
 import com.tito.easyyarn.hazel.GridServiceAgent;
 import com.tito.easyyarn.service.messaging.MessagingServiceAgent;
@@ -33,8 +34,12 @@ public abstract class Tasklet {
 	}
 	
 	public void recieveMessage(Message msg){
-		LOG.info("Message Recieved");
-		LOG.info(msg.toString());
+		
+		try {
+			LOG.info("Message Recieved"+Util.objectFromByteBuffer(msg.getBuffer()).toString());			
+		} catch (Exception e) {
+			LOG.error("Message RecieveFailed : error={}",e);
+		}
 	}
 	public Options setupOptionsAll() {
 		options = getMainClassOption();
