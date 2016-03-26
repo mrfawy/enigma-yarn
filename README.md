@@ -1,5 +1,6 @@
-# Easy Yarn 
+# Easy Yarn  [![Build Status](https://travis-ci.org/mrfawy/enigma-yarn.svg?branch=master)](https://travis-ci.org/mrfawy/enigma-yarn)
 ------------------
+
 
 ## What's Easy Yarn?
 Easy yarn is a framework that abstracts the yarn framework complexity and provide a simpler API allowing developers to focus more on their application logic.
