@@ -30,14 +30,14 @@ public class HelloWorldTasklet extends Tasklet {
 
 	@Override
 	public boolean start() {
-		return callHazel();
-		// callMessages();
-		
+		// callHazel();
+		return callMessages();
+
 	}
 
 	private boolean callHazel() {
 		try {
-			Thread.sleep(1000*new Random().nextInt(10));
+			Thread.sleep(2000 + 1000 * new Random().nextInt(10));
 			Map<Integer, String> customers = GridServiceAgent.getInstance().getHazelInstance().getMap("customers");
 
 			String ID = UUID.randomUUID().toString();
@@ -46,7 +46,7 @@ public class HelloWorldTasklet extends Tasklet {
 			customers.put(2, "Ali_" + ID);
 			customers.put(3, "Avi_" + ID);
 
-			Thread.sleep(1000*new Random().nextInt(5));
+			Thread.sleep(2000 + 1000 * new Random().nextInt(10));
 
 			HazelcastInstance client = GridServiceAgent.getInstance().getHazelInstance();
 			IMap map = client.getMap("customers");
@@ -62,10 +62,10 @@ public class HelloWorldTasklet extends Tasklet {
 
 	private boolean callMessages() {
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(2000 + 1000 * new Random().nextInt(10));
 			LOG.info("Hello world from HelloWorldTasklet!");
-			MessagingServiceAgent.getInstance().broadCast(new TextMessage("Hello Messages! from: " + getId()));
-			Thread.sleep(5000);
+			MessagingServiceAgent.getInstance().broadCast(new TextMessage("Hello Messages! from: " + UUID.randomUUID().toString()));
+			Thread.sleep(2000 + 1000 * new Random().nextInt(5));
 			return true;
 
 		} catch (Exception ex) {

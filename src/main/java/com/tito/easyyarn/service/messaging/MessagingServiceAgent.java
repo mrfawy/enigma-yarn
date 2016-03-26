@@ -6,11 +6,13 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
+import org.jgroups.Channel;
+import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.Receiver;
 
-public class MessagingServiceAgent {
+public class MessagingServiceAgent implements ChannelListener{
 	private static final Log LOG = LogFactory.getLog(MessagingServiceAgent.class);
 
 	// default topic to connect containers;
@@ -72,10 +74,11 @@ public class MessagingServiceAgent {
 		if (!topics.containsKey(topic)) {
 			JChannel channel;
 			try {
-				channel = new JChannel();				
+				channel = new JChannel(this.getClass().getResource("/jgroups-channel.xml"));				
 				//channel.setName(topic + "_"+id);
 				channel.setDiscardOwnMessages(true);
 				channel.setReceiver(this.reciever);
+				channel.addChannelListener(this);
 				channel.connect(topic);
 				topics.put(topic, channel);
 				return true;
@@ -132,6 +135,24 @@ public class MessagingServiceAgent {
 				topics.get(topic).close();
 			}
 		}
+	}
+
+	@Override
+	public void channelClosed(Channel arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void channelConnected(Channel arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void channelDisconnected(Channel arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.tito.easyyarn.hazel;
 
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +33,10 @@ import com.hazelcast.core.HazelcastInstance;
 public class HazelZKConfig {
 	private static final Log LOG = LogFactory.getLog(HazelZKConfig.class);
 
-	private int port = 5701;
 	private String appID = "EASY_YARN_HAZEL";// should be yarn applicationid
 	private String zooKeeperUrl = "lppbd0020.gso.aexp.com:5181";
+
+	private int freePort = -1;
 
 	public HazelcastInstance getInstance() {
 		try {
@@ -55,7 +57,7 @@ public class HazelZKConfig {
 	private NetworkConfig getNetworkConfig() throws Exception {
 		final NetworkConfig networkConfig = new NetworkConfig();
 		networkConfig.setJoin(getJoinConfig());
-		networkConfig.setPort(port);
+		networkConfig.setPort(getFreePort());
 		return networkConfig;
 	}
 
@@ -93,7 +95,7 @@ public class HazelZKConfig {
 	private ServiceInstance<Void> getServiceInstance() throws Exception {
 		final String hostName = InetAddress.getLocalHost().getHostName();
 		return ServiceInstance.<Void> builder().name(appID).uriSpec(new UriSpec("{address}:{port}")).address(hostName)
-				.port(port).build();
+				.port(getFreePort()).build();
 	}
 
 	private CuratorFramework getCuratorFramework() {
@@ -111,6 +113,21 @@ public class HazelZKConfig {
 			result.add(instance.buildUriSpec());
 		}
 		return result;
+	}
+
+	public int getFreePort() {
+		if (freePort == -1) {
+			try {
+				ServerSocket socket = new ServerSocket(0);
+				freePort = socket.getLocalPort();				
+				socket.close();
+			} catch (Exception e) {
+				LOG.error("Can't find open port");
+				return -1;
+			}
+
+		}
+		return freePort;
 	}
 
 }
