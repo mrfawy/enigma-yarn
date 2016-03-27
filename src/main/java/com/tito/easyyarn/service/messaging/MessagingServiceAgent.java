@@ -1,5 +1,6 @@
 package com.tito.easyyarn.service.messaging;
 
+import java.net.ServerSocket;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ public class MessagingServiceAgent implements ChannelListener {
 	private static MessagingServiceAgent me;
 	private String id;
 	private Receiver reciever;
+	private int freePort=-1;
 
 	private MessagingServiceAgent(String id, Receiver reciever) {
 		this.id = id;
@@ -76,6 +78,7 @@ public class MessagingServiceAgent implements ChannelListener {
 			JChannel channel;
 			try {
 				channel = new JChannel(this.getClass().getResource("/jgroups-channel.xml"));
+				channel.getProtocolStack().getTransport().setBindPort(getFreePort());
 				// channel.setName(topic + "_"+id);
 				channel.setDiscardOwnMessages(true);
 				channel.setReceiver(this.reciever);
@@ -128,6 +131,21 @@ public class MessagingServiceAgent implements ChannelListener {
 		}
 
 	}
+	public int getFreePort() {
+		if (freePort == -1) {
+			try {
+				ServerSocket socket = new ServerSocket(0);
+				freePort = socket.getLocalPort();				
+				socket.close();
+			} catch (Exception e) {
+				LOG.error("Can't find open port");
+				return -1;
+			}
+
+		}
+		return freePort;
+	}
+
 
 	@Override
 	protected void finalize() throws Throwable {
