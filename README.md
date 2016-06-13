@@ -354,7 +354,7 @@ Note: when Distributed memory service is ready ,HDFS will be replaced by it for 
 - Encrypt command
 
  ``` 
-yarn jar enigma-yarn-app-1.1.0.jar -jar enigma-yarn-app-1.1.0.jar -appMasterClass  com.tito.sampleapp.enigma.EnigmaAppMaster -enigmaCount 3 -enigmaTempDir /enigmaTempDir -plainTextPath  /test/enigma/plain/plain.txt -cipherTextPath /axp/gcp/cpsetlh/dev/test/enigma/cipher/cipher.text -keyPath /test/enigma/EnigmaKey.key  -operation e  
+yarn jar enigma-yarn-app-1.1.0.jar -jar enigma-yarn-app-1.1.0.jar -appMasterClass  com.tito.sampleapp.enigma.EnigmaAppMaster -enigmaCount 3 -enigmaTempDir /enigmaTempDir -plainTextPath  /test/enigma/plain/plain.txt -cipherTextPath /test/enigma/cipher/cipher.text -keyPath /test/enigma/EnigmaKey.key  -operation e  
 
   ```
 
@@ -362,7 +362,7 @@ yarn jar enigma-yarn-app-1.1.0.jar -jar enigma-yarn-app-1.1.0.jar -appMasterClas
 
   ```
   
-yarn jar enigma-yarn-app-1.1.0.jar -jar /axp/gcp/cpsetlh/dev/enigma-yarn-app-1.1.0.jar -appMasterClass  com.tito.sampleapp.enigma.EnigmaAppMaster -enigmaTempDir /axp/gcp/cpsetlh/dev/test/enigma/enigmaTempDir -plainTextPath  /axp/gcp/cpsetlh/dev/test/enigma/plain/plain_decrypted.txt -cipherTextPath /axp/gcp/cpsetlh/dev/test/enigma/cipher/cipher.text  -keyPath /axp/gcp/cpsetlh/dev/test/enigma/EnigmaKey.key -operation d
+yarn jar enigma-yarn-app-1.1.0.jar -jar enigma-yarn-app-1.1.0.jar -appMasterClass  com.tito.sampleapp.enigma.EnigmaAppMaster -enigmaTempDir /test/enigma/enigmaTempDir -plainTextPath  /test/enigma/plain/plain_decrypted.txt -cipherTextPath /test/enigma/cipher/cipher.text  -keyPath /test/enigma/EnigmaKey.key -operation d
 
   ```
 
