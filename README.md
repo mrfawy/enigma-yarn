@@ -18,7 +18,7 @@ Easy yarn comes to play to complement the points where Yarn fails short . It pro
 * Leveraging Yarn resource allocation capabilities, hiding its complexity 
 * Application life cycle management, argument passing, and monitoring/reporting to history server
 * Fault tolerance: Whenever a machine in the cluster fails, easy yarn works with YARN to transparently migrate your tasks to another machine.
-* Processor isolation: Easy yarn works with Apache YARN, which supports Hadoop’s security model, and resource isolation through Linux CGroups.
+* Processor isolation: Easy yarn works with Apache YARN, which supports Hadoopâ€™s security model, and resource isolation through Linux CGroups.
 * Simpler API programming constructs, abstracting yarn complexity:
   * TaskLets to implement individual work units
   * Phase for parallel Task execution
@@ -62,13 +62,13 @@ Easy yarn doesn't aim to replace or implement MPI standard (~800+ page) on yarn.
 ---------------------------
 
 ### YARN in a nutshell 
-YARN (Yet Another Resource Negotiator) is Hadoop’s next-generation cluster scheduler. It allows you to allocate a number of containers (processes) in a cluster of machines, and execute arbitrary commands on them.
+YARN (Yet Another Resource Negotiator) is Hadoopâ€™s next-generation cluster scheduler. It allows you to allocate a number of containers (processes) in a cluster of machines, and execute arbitrary commands on them.
 
 ##### YARN Architecture
 
 ![YARN Architecture](http://hortonworks.com/wp-content/uploads/2012/08/YARNArch.png)
 
-YARN has three important pieces: a ResourceManager, a NodeManager, and an ApplicationMaster. In a YARN grid, every machine runs a NodeManager, which is responsible for launching processes on that machine. A ResourceManager talks to all of the NodeManagers to tell them what to run. Applications, in turn, talk to the ResourceManager when they wish to run something on the cluster. The third piece, the ApplicationMaster, is actually application-specific code that runs in the YARN cluster. It’s responsible for managing the application’s workload, asking for containers (usually UNIX processes), and handling notifications when one of its containers fails.
+YARN has three important pieces: a ResourceManager, a NodeManager, and an ApplicationMaster. In a YARN grid, every machine runs a NodeManager, which is responsible for launching processes on that machine. A ResourceManager talks to all of the NodeManagers to tell them what to run. Applications, in turn, talk to the ResourceManager when they wish to run something on the cluster. The third piece, the ApplicationMaster, is actually application-specific code that runs in the YARN cluster. Itâ€™s responsible for managing the applicationâ€™s workload, asking for containers (usually UNIX processes), and handling notifications when one of its containers fails.
 
 * References:
   * http://hortonworks.com/blog/apache-hadoop-yarn-background-and-an-overview/
@@ -293,7 +293,7 @@ Note that everything we wrote is directly application specific logic. no boilerp
 
 
 ###Modern Enigma
->"If a trick is over used, it's less likely that anyone will expect us to use it again” 
+>"If a trick is over used, it's less likely that anyone will expect us to use it againâ€ 
 
 Previous Samples showed the basic steps to develop yarn app , we'll build on these concepts and develop a moderately complex app with more than one phase.Modern Enigma is a sample program that shows you what a typical application you write will look like. 
 
@@ -306,11 +306,11 @@ https://github.com/mrfawy/ModernEnigma
 
 #### Introduction
 
->"If a trick is over used, it's less likely that anyone will expect us to use it again” 
+>"If a trick is over used, it's less likely that anyone will expect us to use it againâ€ 
 
 The above motto is a quote from a comic movie, and hence this fun project came into existence, it aims to revive the famous (ehm, for being cracked) Enigma machine .But why bother? 
 
-Protecting your privacy today? Well, good luck. you are using tools that you don't know how it's working (you shouldn’t trust), and when they are cracked you'll barely know after it's too late .So if you can add an extra level or encryption of your data even if it's a homegrown technique, it'll make the problem for your attacker just a little bit harder .Modern Enigma tries to provide a step in this direction.
+Protecting your privacy today? Well, good luck. you are using tools that you don't know how it's working (you shouldnâ€™t trust), and when they are cracked you'll barely know after it's too late .So if you can add an extra level or encryption of your data even if it's a homegrown technique, it'll make the problem for your attacker just a little bit harder .Modern Enigma tries to provide a step in this direction.
 
 Alan Turing is considered to be the father of modern computing, at his time electro-mechanical machines were used to perform computations. This is a software implementation with enhanced features to prevent some weakness points in original Enigma.
 
@@ -354,7 +354,7 @@ Note: when Distributed memory service is ready ,HDFS will be replaced by it for 
 - Encrypt command
 
  ``` 
-yarn jar enigma-yarn-app-1.1.0.jar -jar /axp/gcp/cpsetlh/dev/enigma-yarn-app-1.1.0.jar -appMasterClass  com.tito.sampleapp.enigma.EnigmaAppMaster -enigmaCount 3 -enigmaTempDir /axp/gcp/cpsetlh/dev/test/enigma/enigmaTempDir -plainTextPath  /axp/gcp/cpsetlh/dev/test/enigma/plain/plain.txt -cipherTextPath /axp/gcp/cpsetlh/dev/test/enigma/cipher/cipher.text -keyPath /axp/gcp/cpsetlh/dev/test/enigma/EnigmaKey.key  -operation e  
+yarn jar enigma-yarn-app-1.1.0.jar -jar enigma-yarn-app-1.1.0.jar -appMasterClass  com.tito.sampleapp.enigma.EnigmaAppMaster -enigmaCount 3 -enigmaTempDir /enigmaTempDir -plainTextPath  /test/enigma/plain/plain.txt -cipherTextPath /axp/gcp/cpsetlh/dev/test/enigma/cipher/cipher.text -keyPath /test/enigma/EnigmaKey.key  -operation e  
 
   ```
 
@@ -419,7 +419,7 @@ Reflector is like a rotor but it doesn't move and the wiring has a certain rule 
 A plug board is like a Reflector, but you can arbitrarily configure the wiring per as you need per setting 
 
 #### Keyboard and screen
-It’s here just for historical reasons, but files, byte streams will be used instead
+Itâ€™s here just for historical reasons, but files, byte streams will be used instead
 
 #### Inside a machine 
 Please follow numbers in the image below to get an idea about how signal is propagated into different machine modules during operation
@@ -428,7 +428,7 @@ Please follow numbers in the image below to get an idea about how signal is prop
 
 
 #### How secure Is Modern Enigma?
->Any person can invent a security system so clever that he or she can't imagine a way of breaking it...Schneider’s Law
+>Any person can invent a security system so clever that he or she can't imagine a way of breaking it...Schneiderâ€™s Law
 
 It means that people create a cipher that they themselves can't break, and then use that as evidence they've created an unbreakable cipher.
 
@@ -439,7 +439,7 @@ We tried to fix the original Machine problems , provided a new protocol with dif
 
 So the right question should be is it secure enough for your needs ? You decide,we are still investigating the weaknesses points of this tool.For sure this not to be used in any mission critical app.
 
-###### Any help from an expert on the security assessment or cryptoanalysis of this Modern Enigma is highly appreciated; it’s still in early development phase.
+###### Any help from an expert on the security assessment or cryptoanalysis of this Modern Enigma is highly appreciated; itâ€™s still in early development phase.
 
 #### Mathematics of Modern Enigma:
 
